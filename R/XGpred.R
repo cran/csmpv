@@ -33,9 +33,9 @@
 #' \item{XGpred_prob_class}{Risk group classification based on XGpred_prob for the given probability cutoff}
 #' \item{probcut}{Probability cutoff for risk group classification}
 #' @references 
-#'   Tianqi Chen and Carlos Guestrin, "XGBoost: A Scalable Tree Boosting System", 22nd SIGKDD Conference on Knowledge Discovery and Data Mining, 2016, https://arxiv.org/abs/1603.02754
-#'   Aoki T, Jiang A, Xu A et al. The spatially resolved tumor microenvironment predicts treatment outcome in relapsed/refractory Hodgkin lymphoma,
-#'          bioRxiv 2023.05.19.541331; doi: https://doi.org/10.1101/2023.05.19.541331
+#'  Tianqi Chen and Carlos Guestrin (2016), "XGBoost: A Scalable Tree Boosting System", 22nd SIGKDD Conference on Knowledge Discovery and Data Mining, 2016, https://arxiv.org/abs/1603.02754
+#'  Aoki T, Jiang A, Xu A et al.,(2023) Spatially Resolved Tumor Microenvironment Predicts Treatment Outcomes in Relapsed/Refractory Hodgkin Lymphoma. J Clin Oncol. 2023 Dec 19:JCO2301115. doi: 10.1200/JCO.23.01115. Epub ahead of print. PMID: 38113419.
+
 #' @examples
 #' # Load in data sets:
 #' data("datlist", package = "csmpv")

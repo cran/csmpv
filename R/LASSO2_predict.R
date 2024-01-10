@@ -32,13 +32,13 @@
 
 #' # The function can work with three different outcome types. 
 #' # Here, we use time-to-event as an example:
-#' tl = LASSO2(data = tdat, biomks = Xvars,
-#'             outcomeType = "time-to-event",
-#'             time = "FFP..Years.",event = "Code.FFP",
-#'             outfile = paste0(temp_dir, "/survivalLASSO2"))
+#' # tl = LASSO2(data = tdat, biomks = Xvars,
+#' #             outcomeType = "time-to-event",
+#' #             time = "FFP..Years.",event = "Code.FFP",
+#' #             outfile = paste0(temp_dir, "/survivalLASSO2"))
 #' # To predict the model in a new data set:
-#' ptl = LASSO2_predict(tl, newdata = vdat,
-#'                     outfile = paste0(temp_dir, "/pred_LASSO2_time_to_event"))
+#' # ptl = LASSO2_predict(tl, newdata = vdat,
+#' #                     outfile = paste0(temp_dir, "/pred_LASSO2_time_to_event"))
 #' # You might save the files to the directory you want.
 #' 
 #' # To delete the temp_dir, use the following:

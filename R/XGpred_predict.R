@@ -11,8 +11,8 @@
 #' @author Aixiang Jiang
 #' @return A data frame containing XGpred_score, XGpred_prob, and XGpred_prob_class
 #' @references 
-#'     Aoki T, Jiang A, Xu A et al. The spatially resolved tumor microenvironment predicts treatment outcome in relapsed/refractory Hodgkin lymphoma,
-#'          bioRxiv 2023.05.19.541331; doi: https://doi.org/10.1101/2023.05.19.541331
+#'  Aoki T, Jiang A, Xu A et al.,(2023) Spatially Resolved Tumor Microenvironment Predicts Treatment Outcomes in Relapsed/Refractory Hodgkin Lymphoma. J Clin Oncol. 2023 Dec 19:JCO2301115. doi: 10.1200/JCO.23.01115. Epub ahead of print. PMID: 38113419.
+
 #' @examples
 #' # Load in data sets:
 #' data("datlist", package = "csmpv")

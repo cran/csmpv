@@ -1121,13 +1121,13 @@ risk_confirm[[3]]
 
 Title: Biomarker confirmation, selection, modelling, prediction and validation
 
-Version: 1.0.0
+Version: 1.0.2
 
 Author: Aixiang Jiang
 
 Maintainer: Aixiang Jiang aijiang@bccrc.ca{.email} 
 
-Depends: R (\>= 4.3.0)
+Depends: R (\>= 4.2.0)
 
 Suggests: knitr 
 
