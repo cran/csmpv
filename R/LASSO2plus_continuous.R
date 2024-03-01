@@ -10,13 +10,6 @@
 LASSO2plus_continuous = function(data, biomks,  Y, outfile = "nameWithPath"){
 
   vars = intersect(biomks, colnames(data))
-  
-  # # ### remove variables if their sd < 0.0000001
-  # sdcol = apply(data[, vars],2,sd, na.rm = TRUE)
-  # sdtmp = which(sdcol>0.0000001)
-  # sdtmp = names(sdcol)[sdtmp]
-  # data = data[,c(Y, sdtmp)] 
-  
   ### remove NA for Y side if there are any
   natmp = which(is.na(data[, Y]))
   
@@ -59,10 +52,6 @@ LASSO2plus_continuous = function(data, biomks,  Y, outfile = "nameWithPath"){
   bout = bout[order(bout$adjusteP),]
   ## cutoff, FDR < 0.05
   bout = subset(bout, bout$adjusteP <= 0.05)
-  # if(dim(bout)[1] > 0){ 
-  #   bout = head(bout, n = topN)
-  #   write.csv(bout, gsub("LASSO", "singleVar", lassoCoef))
-  # }  
   topn2 = rownames(bout)  ### even this is empty, the following union still works
   
   ### combine topn1 and topn2, run a full model and step

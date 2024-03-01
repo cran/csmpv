@@ -59,17 +59,19 @@ A list is returned:
 \item{XGBoost_model}{An XGBoost model}
 \item{XGBoost_model_score}{Model scores for the given training data set. 
  For a continuous outcome variable, this is a vector of the estimated continuous values; 
- for a binary outcome variable, this is a vector representing the probability or log-odds of the positive class;
+ for a binary outcome variable, this is a vector representing the probability of the positive class;
  for time-to-event outcome, this a vector of risk scores}
 }
 \description{
 This function performs a two-step process: variable selection using LASSO2 and building a predictive model using XGBoost.
 }
 \details{
-The first part of LASSO2_XGBtraining involves variable selection with LASSO2, which is typically performed using cross-validation-based LASSO regression. 
-However, when only one or no variable is selected, the cross-validation results are ignored, and a minimum of two remaining variables 
-is ensured through full-data lambda simulations.
-The second part of LASSO2_XGBtraining involves ignoring the shrunk LASSO coefficients and building a XGBoost model.
+The first part of LASSO2_XGBtraining involves variable selection with LASSO2, typically based on the mean lambda.1se from 10 iterations of n-fold 
+cross-validation-based LASSO regression. In each iteration, a lambda.1se refers to the largest value of lambda such that the error is within
+1 standard error of the minimum. However, if only one or no variable is selected, the cross-validation results are ignored, 
+and a minimum of two remaining variables is ensured through full-data lambda simulations.
+
+The second part of LASSO2_XGBtraining involves ignoring the shrunk LASSO coefficients and building an XGBoost model.
 It is suitable for three types of outcomes: continuous, binary, and time-to-event.
 }
 \examples{
@@ -88,12 +90,14 @@ blxfit = LASSO2_XGBtraining(data = tdat, biomks = Xvars, Y = "DZsig",
                            outfile = paste0(temp_dir, "/binary_LASSO2_XGBoost"))
 # You might save the files to the directory you want.
 
-# To delete the temp_dir, use the following:
+# To delete the "temp_dir", use the following:
 unlink(temp_dir)
 }
 \references{
 Friedman, J., Hastie, T. and Tibshirani, R. (2008) Regularization Paths for Generalized Linear Models via Coordinate Descent (2010), Journal of Statistical Software, Vol. 33(1), 1-22, doi:10.18637/jss.v033.i01.
+  
   Simon, N., Friedman, J., Hastie, T. and Tibshirani, R. (2011) Regularization Paths for Cox's Proportional Hazards Model via Coordinate Descent, Journal of Statistical Software, Vol. 39(5), 1-13, doi:10.18637/jss.v039.i05.
+  
   Tianqi Chen and Carlos Guestrin, "XGBoost: A Scalable Tree Boosting System", 22nd SIGKDD Conference on Knowledge Discovery and Data Mining, 2016, https://arxiv.org/abs/1603.02754
 }
 \author{

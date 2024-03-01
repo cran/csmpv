@@ -6,7 +6,7 @@
 #' @details
 #' The function utilizes glmnet::cv.glmnet for cross-validation-based variable selection with 
 #' the largest value of lambda such that error is within 1 standard error of the minimum. 
-#' To mitigate randomness from cross-validation splits, it conducts 10 runs (this number can later be parameterized) of 10-fold cv.glmnet. The resulting 
+#' To mitigate randomness from cross-validation splits, it conducts 10 runs (this number can later be parameterized) of n-fold cv.glmnet. The resulting 
 #' average lambda value across these runs serves as the final lambda. Subsequently, the final regularization regression is performed on the 
 #' complete dataset using this mean lambda value. Following this, the function assesses the count of remaining variables. If only one or none 
 #' are selected, the function defaults to selecting the first lambda that results in at least two chosen variables on the full dataset.
@@ -22,7 +22,7 @@
 #' @param time The time variable name when the outcome type is "time-to-event".
 #' @param event The event variable name when the outcome type is "time-to-event".
 #' @param nfolds The number of folds for cross-validation. The default is 10.
-#' @param outfile A string for the output file name, including the path if necessary but without the file type extension.
+#' @param outfile A string representing the output file, including the path if necessary, but without the file type extension.
 #' @import glmnet
 #' @importFrom Matrix nnzero
 #' @importFrom grDevices pdf
@@ -44,6 +44,7 @@
 #' A shrunken coefficient vector is returned 
 #' @references 
 #'   Friedman, J., Hastie, T. and Tibshirani, R. (2008) Regularization Paths for Generalized Linear Models via Coordinate Descent (2010), Journal of Statistical Software, Vol. 33(1), 1-22, doi:10.18637/jss.v033.i01.
+#'   
 #'   Simon, N., Friedman, J., Hastie, T. and Tibshirani, R. (2011) Regularization Paths for Cox's Proportional Hazards Model via Coordinate Descent, Journal of Statistical Software, Vol. 39(5), 1-13, doi:10.18637/jss.v039.i05.
 #'
 #' @examples
@@ -65,7 +66,7 @@
 #' #             outfile = paste0(temp_dir, "/survivalLASSO2"))
 #' # You might save the files to the directory you want.
 #' 
-#' # To delete the temp_dir, use the following:
+#' # To delete the "temp_dir", use the following:
 #' unlink(temp_dir)
 
 
@@ -99,16 +100,12 @@ LASSO2 = function(data = NULL, standardization = FALSE, columnWise = TRUE, biomk
     ## change to multiple runs on 20231122 to reduce randomness caused by random splits in cv.glmnet
     lvalue = rep(0,10)
     for (i in 1:10){
-      alls = glmnet::cv.glmnet(x= data.matrix(data[,vars]), y=as.numeric(data[,Y]), family = "binomial")
-      #lvalue[i] = alls$lambda.min
+      alls = glmnet::cv.glmnet(x= data.matrix(data[,vars]), y=as.numeric(data[,Y]), family = "binomial", nfolds = nfolds)
       # analyze examples in cv.glmnet's help file, lambda.1se is actually used.
       lvalue[i] = alls$lambda.1se
     }
     pdf(paste0(outfile,"_LASSO_output.pdf"))
     plot(alls) 
-    # A plot is produced, and nothing is returned
-    # after change to multiple runs, this is actually plotted based on last cv.glmnet, not for all
-    #    while this is not much meaningful, at least we get some idea
     title(paste0("Outcome type: ",outcomeType), line = 2.5)
     dev.off()
 
@@ -138,16 +135,12 @@ LASSO2 = function(data = NULL, standardization = FALSE, columnWise = TRUE, biomk
   }else if(outcomeType == "continuous"){
     lvalue = rep(0,10)
     for (i in 1:10){
-      alls = glmnet::cv.glmnet(x= data.matrix(data[,vars]), y=as.numeric(data[,Y]))
-      #lvalue[i] = alls$lambda.min
+      alls = glmnet::cv.glmnet(x= data.matrix(data[,vars]), y=as.numeric(data[,Y]), nfolds = nfolds)
       # analyze examples in cv.glmnet's help file, lambda.1se is actually used.
       lvalue[i] = alls$lambda.1se
     }
     pdf(paste0(outfile,"_LASSO_output.pdf"))
     plot(alls) 
-    # A plot is produced, and nothing is returned
-    # after change to multiple runs, this is actually plotted based on last cv.glmnet, not for all
-    #    while this is not much meaningful, at least we get some idea
     title(paste0("Outcome type: ",outcomeType), line = 2.5)
     dev.off()
 
@@ -177,8 +170,7 @@ LASSO2 = function(data = NULL, standardization = FALSE, columnWise = TRUE, biomk
     ## change to multiple runs on 20231122 to reduce randomness caused by random splits in cv.glmnet
     lvalue = rep(0,10)
     for (i in 1:10){
-      alls = glmnet::cv.glmnet(x= data.matrix(data[,vars]), y= surObj, family = "cox", type.measure = "C")
-      #lvalue[i] = alls$lambda.min
+      alls = glmnet::cv.glmnet(x= data.matrix(data[,vars]), y= surObj, family = "cox", type.measure = "C", nfolds = nfolds)
       # analyze examples in cv.glmnet's help file, lambda.1se is actually used.
       lvalue[i] = alls$lambda.1se
     }
@@ -220,14 +212,6 @@ LASSO2 = function(data = NULL, standardization = FALSE, columnWise = TRUE, biomk
   sink()
   
   scoefs = coef(alls)
-  # allk = scoefs@Dimnames[[1]]
-  # k = scoefs@i
-  # coefs = scoefs@x
-  # if(allk[1] == "(Intercept)"){
-  #   names(coefs) = allk[k+1]
-  # }else{
-  #   names(coefs) = allk[k]
-  # }
   scoefs = data.frame( predict_names = rownames(scoefs),
                            coef_vals = matrix(scoefs))
   if(scoefs[1,1] == "(Intercept)"){

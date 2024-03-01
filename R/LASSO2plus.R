@@ -4,13 +4,12 @@
 #' This function performs variable selection using the LASSO2plus algorithm and subsequently builds a model.
 #' 
 #' @details
-#' The LASSO2plus algorithm begins with variable selection using LASSO2, which is typically a cross-validation-based LASSO regression. 
-#' However, when only one or no variable is selected, the cross-validation results are ignored, and a minimum of two remaining variables is ensured 
-#' through full-data lambda simulations. Additionally, it conducts variable selection through single-variable regression for each candidate variable.
-
+#' The LASSO2plus algorithm begins with variable selection using LASSO2, typically involving multiple cross-validation-based LASSO regressions.
+#' However, if only one or no variables are selected, the cross-validation results are ignored, and the algorithm ensures a minimum 
+#' of two remaining variables through full-data lambda simulations. Additionally, it conducts variable selection through single-variable regression for each candidate variable.
 #' The variables selected from both LASSO2 and single-variable approaches are then combined to perform traditional variable selection using stepwise regression. 
 
-#' This function is designed to handle outcome variables of binary, continuous, or time-to-event types. Following variable selection, 
+#' This function is designed to handle outcome variables of binary, continuous, or time-to-event type. Following variable selection, 
 #' a model is constructed using standard R functions such as lm, glm, or coxph, depending on the type of outcome variable.
 #' 
 #' @param data A data matrix or a data frame, samples are in rows, and features/traits are in columns.
@@ -31,9 +30,13 @@
 #' \item{outplot}{A forest plot}
 #' @references 
 #'   Friedman, J., Hastie, T. and Tibshirani, R. (2008) Regularization Paths for Generalized Linear Models via Coordinate Descent (2010), Journal of Statistical Software, Vol. 33(1), 1-22, doi:10.18637/jss.v033.i01.
+#'   
 #'   Simon, N., Friedman, J., Hastie, T. and Tibshirani, R. (2011) Regularization Paths for Cox's Proportional Hazards Model via Coordinate Descent, Journal of Statistical Software, Vol. 39(5), 1-13, doi:10.18637/jss.v039.i05.
+#'   
 #'   Hastie, T. J. and Pregibon, D. (1992) Generalized linear models. Chapter 6 of Statistical Models in S eds J. M. Chambers and T. J. Hastie, Wadsworth & Brooks/Cole.
+#'   
 #'   Therneau, T., Grambsch, P., Modeling Survival Data: Extending the Cox Model. Springer-Verlag, 2000.
+#'   
 #'   Kassambara A, Kosinski M, Biecek P (2021). survminer: Drawing Survival Curves using 'ggplot2'_. R package version 0.4.9,
 #'         <https://CRAN.R-project.org/package=survminer>.
 #' @examples
@@ -54,7 +57,7 @@
 #'                    outfile = paste0(temp_dir, "/continuousLASSO2plus"))
 #' # You might save the files to the directory you want.
 #' 
-#' # To delete the temp_dir, use the following:
+#' # To delete the "temp_dir", use the following:
 #' unlink(temp_dir)
 
 #' @export

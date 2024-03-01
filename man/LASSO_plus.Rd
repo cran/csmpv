@@ -36,9 +36,9 @@ This is only meaningful when "standardization" is TRUE.}
 
 \item{event}{Event variable name when outcome type is "time-to-event".}
 
-\item{topN}{An integer to indicate how many variables we intend to select}
+\item{topN}{An integer indicating the desired number of variables to be selected.}
 
-\item{outfile}{A string for the output file including path if necessary but without file type extension.}
+\item{outfile}{A string representing the output file, including the path if necessary, but without the file type extension}
 
 \item{height}{An integer to indicate the forest plot height in inches}
 }
@@ -72,16 +72,21 @@ bfit = LASSO_plus(data = tdat, biomks = Xvars, Y = "DZsig", topN = 5,
                   outfile = paste0(temp_dir, "/binaryLASSO_plus"))
 # You might save the files to the directory you want.
 
-# To delete the temp_dir, use the following:
+# To delete the "temp_dir", use the following:
 unlink(temp_dir)
 }
 \references{
 Friedman, J., Hastie, T. and Tibshirani, R. (2008) Regularization Paths for Generalized Linear Models via Coordinate Descent (2010), Journal of Statistical Software, Vol. 33(1), 1-22, doi:10.18637/jss.v033.i01.
+ 
  Simon, N., Friedman, J., Hastie, T. and Tibshirani, R. (2011) Regularization Paths for Cox's Proportional Hazards Model via Coordinate Descent, Journal of Statistical Software, Vol. 39(5), 1-13, doi:10.18637/jss.v039.i05.
+ 
  Hastie, T. J. and Pregibon, D. (1992) Generalized linear models. Chapter 6 of Statistical Models in S eds J. M. Chambers and T. J. Hastie, Wadsworth & Brooks/Cole.
+ 
  Therneau, T., Grambsch, P., Modeling Survival Data: Extending the Cox Model. Springer-Verlag, 2000.
- Kassambara A, Kosinski M, Biecek P (2021). survminer: Drawing Survival Curves using 'ggplot2'_. R package version 0.4.9,
+ 
+ Kassambara A, Kosinski M, Biecek P (2021). survminer: Drawing Survival Curves using 'ggplot2', R package version 0.4.9,
         <https://CRAN.R-project.org/package=survminer>.
+ 
  Aoki T, Jiang A, Xu A et al.,(2023) Spatially Resolved Tumor Microenvironment Predicts Treatment Outcomes in Relapsed/Refractory Hodgkin Lymphoma. J Clin Oncol. 2023 Dec 19:JCO2301115. doi: 10.1200/JCO.23.01115. Epub ahead of print. PMID: 38113419.
 }
 \author{

@@ -13,11 +13,11 @@ validate_continuous = function(yhat, yobs){
   f1 = lm(yobs ~ yhat, data = compdat)
   p1 <- ggplot(data = compdat, aes(x = yobs, y = yhat)) +
     geom_point(color = "grey", size = 0.5) +
-    geom_smooth(method = "lm", se = TRUE, color = "grey", fill = "lightgray") +
+    geom_smooth(method = "lm", se = TRUE,  fill = "lightgray") +
     ylab("Actual values") +
     xlab("Predicted values") +
     ggtitle(paste0("Mean Squared Error (MSE): ", sprintf("%.4f", mse))) +
-    geom_abline(intercept = 0, slope = 1) +
+    #geom_abline(intercept = 0, slope = 1) +  ## removed the idential line
     geom_text(aes(x = min(yobs, na.rm = T), y = max(yhat, na.rm = T),
                   label = paste0("y = ", sprintf("%.2f", coef(f1)[1]), "+", sprintf("%.2f", coef(f1)[2]), "x")),
               hjust = 0, vjust = 1) +
@@ -52,7 +52,6 @@ validate_continuous = function(yhat, yobs){
   
   # Use ggarrange to arrange the plots
   pall <- ggarrange(p1, p2, p3,p4, ncol = 2, nrow = 2)
-  #print(pall)
   return(pall)
 }
 

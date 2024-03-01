@@ -27,7 +27,8 @@ LASSO2plus_XGBtraining(
 
 \item{standardization}{A logical variable to indicate if standardization is needed before variable selection. The default is FALSE.}
 
-\item{columnWise}{A logical variable to indicate if column wise or row wise normalization is needed. The default is TRUE, which us tod do column-wise normalization. This is only meaningful when "standardization" is TRUE.}
+\item{columnWise}{A logical variable indicating whether column-wise or row-wise normalization is needed. 
+The default is TRUE, which is used to perform column-wise normalization. This is only meaningful when "standardization" is TRUE.}
 
 \item{biomks}{A vector of potential biomarkers for variable selection. They should be a subset of "data" column names.}
 
@@ -58,19 +59,17 @@ A list is returned:
 \item{XGBoost_model}{An XGBoost model}
 \item{XGBoost_model_score}{Model scores for the given training data set. 
  For a continuous outcome variable, this is a vector of the estimated continuous values; 
- for a binary outcome variable, this is a vector representing the probability or log-odds of the positive class;
+ for a binary outcome variable, this is a vector representing the probability of the positive class;
  for time-to-event outcome, this is a vector of risk scores}
 }
 \description{
 This function performs variable selection using LASSO2plus and then builds an XGBoost model.
 }
 \details{
-#' The first part of LASSO2_XGBtraining involves variable selection with LASSO2plus. The LASSO2plus algorithm begins with variable selection using LASSO2,
-which is typically a cross-validation-based LASSO regression. However, when only one or no variable is selected, the cross-validation results are ignored, 
-and a minimum of two remaining variables is ensured through full-data lambda simulations. Additionally, it conducts variable selection through 
-single-variable regression for each candidate variable. The variables selected from both LASSO2 and single-variable approaches are then combined to 
-perform traditional variable selection using stepwise regression. 
-The second part of LASSO2plus_XGBtraining involves ignoring the shrunk LASSO coefficients and building a XGBoost model.
+The first part of LASSO2plus_XGBtraining involves variable selection with LASSO2plus. The LASSO2plus algorithm begins with variable selection using LASSO2,
+followed by variable selection through single-variable regression for each candidate variable. Finally, the two sets of selected variables are combined and processed to
+obtain the final list through stepwise variable selection.
+The second part of LASSO2plus_XGBtraining involves using the final variable list obtained above to build an XGBoost model.
 It is suitable for three types of outcomes: continuous, binary, and time-to-event.
 }
 \examples{
@@ -92,12 +91,14 @@ Xvars = c("highIPI", "B.Symptoms", "MYC.IHC", "BCL2.IHC", "CD10.IHC", "BCL6.IHC"
 #
 # You might save the files to the directory you want.
 
-# To delete the temp_dir, use the following:
-# unlink(temp_dir)
+# To delete the "temp_dir", use the following:
+unlink(temp_dir)
 }
 \references{
 Friedman, J., Hastie, T. and Tibshirani, R. (2008) Regularization Paths for Generalized Linear Models via Coordinate Descent (2010), Journal of Statistical Software, Vol. 33(1), 1-22, doi:10.18637/jss.v033.i01.
+  
   Simon, N., Friedman, J., Hastie, T. and Tibshirani, R. (2011) Regularization Paths for Cox's Proportional Hazards Model via Coordinate Descent, Journal of Statistical Software, Vol. 39(5), 1-13, doi:10.18637/jss.v039.i05.
+  
   Tianqi Chen and Carlos Guestrin, "XGBoost: A Scalable Tree Boosting System", 22nd SIGKDD Conference on Knowledge Discovery and Data Mining, 2016, https://arxiv.org/abs/1603.02754
 }
 \author{

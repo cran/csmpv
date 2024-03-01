@@ -21,7 +21,7 @@ LASSO2_predict(
 
 \item{u}{A single numeric follow-up time for survival outcomes.}
 
-\item{outfile}{A string for the output file including the path, if necessary, but without the file type extension.}
+\item{outfile}{A string representing the output file, including the path if necessary, but without the file type extension.}
 }
 \value{
 A vector of predicted values is returned.
@@ -52,13 +52,16 @@ Xvars = c("highIPI", "B.Symptoms", "MYC.IHC", "BCL2.IHC", "CD10.IHC", "BCL6.IHC"
 #                     outfile = paste0(temp_dir, "/pred_LASSO2_time_to_event"))
 # You might save the files to the directory you want.
 
-# To delete the temp_dir, use the following:
+# To delete the "temp_dir", use the following:
 unlink(temp_dir)
 }
 \references{
 Friedman, J., Hastie, T. and Tibshirani, R. (2008) Regularization Paths for Generalized Linear Models via Coordinate Descent (2010), Journal of Statistical Software, Vol. 33(1), 1-22, doi:10.18637/jss.v033.i01.
+  
   Simon, N., Friedman, J., Hastie, T. and Tibshirani, R. (2011) Regularization Paths for Cox's Proportional Hazards Model via Coordinate Descent, Journal of Statistical Software, Vol. 39(5), 1-13, doi:10.18637/jss.v039.i05.
+  
   Harrell Jr F (2023). rms: Regression Modeling Strategies_. R package version 6.7-1, <https://CRAN.R-project.org/package=rms>
+  
   Harrell Jr F (2023). Hmisc: Harrell Miscellaneous_. R package version 5.1-1, <https://CRAN.R-project.org/package=Hmisc>
 }
 \author{

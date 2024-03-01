@@ -22,7 +22,7 @@ csmpvModelling(
 \arguments{
 \item{tdat}{Training data. It can not be null.}
 
-\item{vdat}{Validation data. It should contain the same variables as in the training data including outcome variables, No validation result is saved if it is NULL.}
+\item{vdat}{Validation data. It should contain the same variables as in the training data, including outcome variables. No validation result is saved if it is NULL.}
 
 \item{Ybinary}{Binary outcome variable for classification.}
 
@@ -40,7 +40,7 @@ csmpvModelling(
 
 \item{methods}{Method(s) to use for modeling. If "all," models for all eight methods will be built. 
 Otherwise, provide one of the following method names:
-- "LASSO2": Variable selection using LASSO with a minimum of two remaining variables.
+- "LASSO2": Variable selection using LASSO2 with a minimum of two remaining variables.
 - "LASSO2_reg": Variables selected from LASSO2, followed by regular regression.
 - "LASSO_plus": Variables selected from LASSO_plus, followed by regular regression.
 - "LASSO2plus": Variables selected from LASSO2plus, followed by regular regression.
@@ -52,17 +52,16 @@ Otherwise, provide one of the following method names:
 \item{outfileName}{Prefix for output file names.}
 }
 \value{
-A list of trained models. Results are saved to local files.
+A list of trained models and prediction objects. Results are saved to local files.
 }
 \description{
-This function is designed to simplify the process of evaluating and comparing different machine learning models. It offers the flexibility to perform one 
+This function is designed to simplify the process of building, evaluating and comparing different modelling methods. It offers the flexibility to perform one 
 or all of the following modelling methods: LASSO2, LASSO2 + regression, LASSO_plus, LASSO2plus, XGBoost, LASSO2 + XGBoost, LASSO_plus + XGBoost, 
 and LASSO2plus + XGBoost. The models are trained on the training data, and their performance is validated on a separate validation dataset.
 }
 \details{
-By default, this function runs all eight different modelling methods. However, users can specify the "methods" parameter to choose and run a specific modelling 
-method of their choice. For clarity, when providing a "vdat" argument, the function assumes that it contains the outcome variable, and it proceeds with model
-validation.
+By default, this function runs all eight different modeling methods. However, users can specify the "methods" parameter to choose and run a specific modelling 
+method of their choice. For clarity, when providing a 'vdat' argument, the function assumes that it contains the outcome variable, and it proceeds with model validation.
 }
 \examples{
 # Load in data sets:
@@ -84,12 +83,12 @@ DZlassoreg = csmpvModelling(tdat = tdat, vdat = vdat,
                            Ybinary = "DZsig", varsBinary = Xvars,
                            methods = "LASSO2_reg",
                            outfileName= paste0(temp_dir, "/just_one"))
-# This is equivalent to using LASSO2_reg for modeling, 
-# followed by prediction and validation with rms_model for the classification task "DZsig". 
+# This is equivalent to using LASSO2_reg for modeling, followed by prediction and validation 
+# with rms_model for the classification task "DZsig".
 # Six result files are then saved locally.
-# You might save the files to the directory you want.
+# You might want to save the files to the directory you prefer.
 
-# To delete the temp_dir, use the following:
+# To delete the "temp_dir", use the following:
 unlink(temp_dir)
 }
 \author{

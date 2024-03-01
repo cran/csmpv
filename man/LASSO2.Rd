@@ -37,7 +37,7 @@ This is only meaningful when "standardization" is TRUE.}
 
 \item{nfolds}{The number of folds for cross-validation. The default is 10.}
 
-\item{outfile}{A string for the output file name, including the path if necessary but without the file type extension.}
+\item{outfile}{A string representing the output file, including the path if necessary, but without the file type extension.}
 }
 \value{
 A list is returned:
@@ -59,7 +59,7 @@ It calculates the mean lambda value from multiple cv.glmnet runs and ensures the
 \details{
 The function utilizes glmnet::cv.glmnet for cross-validation-based variable selection with 
 the largest value of lambda such that error is within 1 standard error of the minimum. 
-To mitigate randomness from cross-validation splits, it conducts 10 runs (this number can later be parameterized) of 10-fold cv.glmnet. The resulting 
+To mitigate randomness from cross-validation splits, it conducts 10 runs (this number can later be parameterized) of n-fold cv.glmnet. The resulting 
 average lambda value across these runs serves as the final lambda. Subsequently, the final regularization regression is performed on the 
 complete dataset using this mean lambda value. Following this, the function assesses the count of remaining variables. If only one or none 
 are selected, the function defaults to selecting the first lambda that results in at least two chosen variables on the full dataset.
@@ -83,11 +83,12 @@ Xvars = c("highIPI", "B.Symptoms", "MYC.IHC", "BCL2.IHC", "CD10.IHC", "BCL6.IHC"
 #             outfile = paste0(temp_dir, "/survivalLASSO2"))
 # You might save the files to the directory you want.
 
-# To delete the temp_dir, use the following:
+# To delete the "temp_dir", use the following:
 unlink(temp_dir)
 }
 \references{
 Friedman, J., Hastie, T. and Tibshirani, R. (2008) Regularization Paths for Generalized Linear Models via Coordinate Descent (2010), Journal of Statistical Software, Vol. 33(1), 1-22, doi:10.18637/jss.v033.i01.
+  
   Simon, N., Friedman, J., Hastie, T. and Tibshirani, R. (2011) Regularization Paths for Cox's Proportional Hazards Model via Coordinate Descent, Journal of Statistical Software, Vol. 39(5), 1-13, doi:10.18637/jss.v039.i05.
 }
 \author{

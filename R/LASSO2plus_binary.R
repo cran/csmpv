@@ -12,13 +12,7 @@
 LASSO2plus_binary = function(data, biomks,  Y, outfile = "nameWithPath"){
   
   vars = intersect(biomks, colnames(data))
-  
-  # # ### remove variables if their sd < 0.0000001
-  # sdcol = apply(data[, vars],2,sd, na.rm = TRUE)
-  # sdtmp = which(sdcol>0.0000001)
-  # sdtmp = names(sdcol)[sdtmp]
-  # data = data[,c(Y, sdtmp)] 
-  # 
+ 
   ### remove NA for Y side if there are any
   natmp = which(is.na(data[, Y]))
   

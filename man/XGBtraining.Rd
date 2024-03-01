@@ -51,20 +51,23 @@ A list is returned:
 For a continuous outcome variable, this is a vector of the estimated continuous values;
 for a binary outcome variable, this is a vector representing the probability of the positive class;
 for a time-to-event outcome, this is a vector of risk scores.}
-\item{h0}{Cumulative baseline hazard table, for time to event outcome only}
+\item{h0}{Cumulative baseline hazard table, for time to event outcome only.}
 \item{Y}{The outcome variable name when the outcome type is either "binary" or "continuous".}
 \item{time}{The time variable name when the outcome type is "time-to-event".}
 \item{event}{The event variable name when the outcome type is "time-to-event".}
 }
 \description{
-This wrapper function streamlines the process of utilizing the xgboost package for model training. It takes care of converting the data format to xgb.DMatrix, handling xgboost's specific settings, and invoking xgboost::xgboost.
-The function is suitable for all three outcome types: binary, continuous, and time-to-event. It returns both the trained model and the model scores for the training dataset.
+This wrapper function streamlines the process of utilizing the xgboost package for model training. 
+It takes care of converting the data format to xgb.DMatrix, handling xgboost's specific settings, 
+and invoking xgboost::xgboost. The function is suitable for all three outcome types: binary, 
+continuous, and time-to-event. It returns both the trained model and the model scores for the 
+training dataset.
 
-It's important to note that all independent variables (X variables) should already be selected and in numeric format when passed to this function. Additionally, this function does not perform variable selection or automatically convert categorical variables to numeric format.
+It's important to note that all independent variables (X variables) should already be selected 
+and in numeric format when passed to this function. Additionally, this function does not perform 
+variable selection or automatically convert categorical variables to numeric format.
 }
-\references{
-Tianqi Chen and Carlos Guestrin, "XGBoost: A Scalable Tree Boosting System", 22nd SIGKDD Conference on Knowledge Discovery and Data Mining, 2016, https://arxiv.org/abs/1603.02754
-#' @examples
+\examples{
 # Load in data sets:
 data("datlist", package = "csmpv")
 tdat = datlist$training
@@ -80,8 +83,11 @@ txfit = XGBtraining(data = tdat, biomks = Xvars,
                     outcomeType = "time-to-event",
                     time = "FFP..Years.",event = "Code.FFP",
                     outfile = paste0(temp_dir, "/survival_XGBoost"))
-# To delete the temp_dir, use the following:
+# To delete the "temp_dir", use the following:
 unlink(temp_dir)
+}
+\references{
+Tianqi Chen and Carlos Guestrin, "XGBoost: A Scalable Tree Boosting System", 22nd SIGKDD Conference on Knowledge Discovery and Data Mining, 2016, https://arxiv.org/abs/1603.02754
 }
 \author{
 Aixiang Jiang

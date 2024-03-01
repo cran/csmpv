@@ -9,18 +9,18 @@ rms_model(afit, data = NULL, newdata = NULL, newY = FALSE, u = 2, outfile)
 \arguments{
 \item{afit}{A model fit from lm, glm, or coxph.}
 
-\item{data}{A data frame used to obtain the 'afit' object. This parameter is only required when the outcome variable is time to event; otherwise, the data is extracted from 'afit'.}
+\item{data}{A data frame used to obtain the 'afit' object. This parameter is only required when the outcome variable is time-to-event; otherwise, the data is extracted from 'afit'.}
 
 \item{newdata}{A new data frame for prediction.}
 
-\item{newY}{A logical variable indicating if 'newdata' contains the outcome variable.}
+\item{newY}{A logical variable indicating whether 'newdata' contains the outcome variable.}
 
-\item{u}{A single numeric follow-up time for survival outcomes.}
+\item{u}{A single numeric value representing follow-up time for survival outcomes, used to estimate the survival probability for the given time point.}
 
 \item{outfile}{A string indicating the output file name without the file type extension, but including the complete path information.}
 }
 \value{
-Prediction is returned.
+Predictions are returned.
 }
 \description{
 This wrapper function harnesses the capabilities of the rms package to construct robust predictive models using various modeling techniques.
@@ -33,7 +33,7 @@ The wrapper function capitalizes on the power of the rms package, providing a se
 With the rms package, the function conducts efficient bootstrap-based internal validation, enabling thorough model evaluation. 
 Nomograph plots and C-index calculations are also at your disposal. Furthermore, the function adapts to your needs by predicting model scores for new datasets. 
 In the absence of new data, it generates predictions based on the training data. However, when you provide an independent dataset complete with outcome 
-variable information, the function extends to external validation. This enables assessing model performance in an independent context using the rms and R packages.
+variable information, the function extends to external validation. This enables assessing model performance in an independent context using the rms R package.
 
 All results, from the model itself to internal validation metrics and predictions, are conveniently stored locally for easy access and further analysis.
 }
@@ -58,12 +58,13 @@ pclr = rms_model(clr$fit, newdata = vdat,
                  outfile = paste0(temp_dir, "/pred_LASSO2reg_continuous"))
 # You might save the files to the directory you want.
 
-# To delete the temp_dir, use the following:
+# To delete the "temp_dir", use the following:
 unlink(temp_dir)
 }
 \references{
-Harrell Jr F (2023). rms: Regression Modeling Strategies_. R package version 6.7-1, <https://CRAN.R-project.org/package=rms>
-  Harrell Jr F (2023). Hmisc: Harrell Miscellaneous_. R package version 5.1-1, <https://CRAN.R-project.org/package=Hmisc>
+Harrell Jr F (2023). rms: Regression Modeling Strategies. R package version 6.7-1, <https://CRAN.R-project.org/package=rms>
+  
+  Harrell Jr F (2023). Hmisc: Harrell Miscellaneous. R package version 5.1-1, <https://CRAN.R-project.org/package=Hmisc>
 }
 \author{
 Aixiang Jiang

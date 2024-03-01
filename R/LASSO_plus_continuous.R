@@ -11,12 +11,6 @@ LASSO_plus_continuous = function(data, biomks,  Y, topN = 10){
   
   vars = intersect(biomks, colnames(data))
   
-  # # ### remove variables if their sd < 0.0000001
-  # sdcol = apply(data[, vars],2,sd, na.rm = TRUE)
-  # sdtmp = which(sdcol>0.0000001)
-  # sdtmp = names(sdcol)[sdtmp]
-  # data = data[,c(Y, sdtmp)] 
-  
   ### remove NA for Y side if there are any
   natmp = which(is.na(data[, Y]))
   
@@ -27,20 +21,7 @@ LASSO_plus_continuous = function(data, biomks,  Y, topN = 10){
   lassoF = glmnet::glmnet(x= data.matrix(data[,vars]), y=as.numeric(data[,Y]))
   
   allcoefs = data.matrix(lassoF$beta)
-  
-  #  is it necessary to save the lassoplot and lambda tables?
-  #   outfile = paste0("glm_",topN,"_",filename, "_", title)
-  #   lassoPlot = paste0(outfile, "_LASSO.pdf")
-  #   lassoCoef = gsub("pdf", "csv",lassoPlot)
-  #   
-  #   pdf(lassoPlot)
-  #   plot(lassoF)
-  #   #plotres(lassoF)
-  #   plot(lassoF,xvar="lambda",label=TRUE)
-  #   dev.off()
-  
-  ####################################################
-  
+ 
   ## calculate how many variables are remained, and a0 is in a different output 
   coef01 = apply(allcoefs, c(1,2), FUN = function(xx) { ifelse(abs(xx) > 0.00001, 1, 0)})
   csum = colSums(coef01)
@@ -69,7 +50,6 @@ LASSO_plus_continuous = function(data, biomks,  Y, topN = 10){
   ###############################################################################
   
   ### now, let's try to use single variable approach
-  #survY = paste0("Surv(", morevar[1],",", morevar[2], ")")  ## this is duplicated, and should remove
   bout = t(sapply(vars, function(var1){
     out1 = glm(as.formula(paste(Y, var1, sep=" ~ ")), data = data)
     coefout = summary(out1)$coefficients
@@ -92,10 +72,6 @@ LASSO_plus_continuous = function(data, biomks,  Y, topN = 10){
   bout = bout[order(bout$adjusteP),]
   ## cutoff, FDR < 0.05
   bout = subset(bout, bout$adjusteP <= 0.05)
-  # if(dim(bout)[1] > 0){ 
-  #   bout = head(bout, n = topN)
-  #   write.csv(bout, gsub("LASSO", "singleVar", lassoCoef))
-  # }  
   topn2 = rownames(bout)  ### even this is empty, the following union still works
   
   ### combine topn1 and topn2, run a full model and step

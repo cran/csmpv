@@ -1,15 +1,14 @@
 #' Predicting XGBoost Model Scores and Performing Validation
-#' 
-#' @description This function is designed for predicting XGBoost model scores based on an xgbtrainingObj object and a new dataset. It converts the provided new data format into the required xgb.DMatrix format and returns the corresponding model scores.
-#' 
-#' If the new dataset contains an outcome variable, the function also performs a validation step, comparing the predictions with the observed outcomes.
-#'
-#' @param xgbtrainingObj A xgbtrainingObj object
+#' @description 
+#' This function predicts XGBoost model scores using an XGBtraining object and a new dataset. 
+#' It converts the input data to the required xgb.DMatrix format and returns the model scores. 
+#' If the new dataset includes an outcome variable, the function also performs validation, 
+#' comparing predictions with observed outcomes.
+#' @param xgbtrainingObj An XGBtraining object returned from the XGBtraining function.
 #' @param newdata A data matrix or a data frame, samples are in rows, and features/traits are in columns.
 #' @param newY A logical variable indicating if 'newdata' contains the outcome variable.
 #' @param outfile A string for the output file including path if necessary but without file type extension. 
-#' @return A vector of predicted values is return. If outcome variable is variable for the new data set, validation is processed and
-#'  a list with the following items is returned:
+#' @return A vector of predicted values is return. If an outcome variable is available for the new dataset, validation is performed.
 #' \item{predicted}{A vector of model prediction values. For continuous outcome, this is a vector of model scores; 
 #' for binary outcome, this is a vector representing the probability of the positive class;
 #' for time to event outcome, this is a vector of risk scores}
@@ -17,7 +16,9 @@
 #' @import xgboost
 #' @references 
 #'   Tianqi Chen and Carlos Guestrin, "XGBoost: A Scalable Tree Boosting System", 22nd SIGKDD Conference on Knowledge Discovery and Data Mining, 2016, https://arxiv.org/abs/1603.02754
+#'   
 #'   Harrell Jr F (2023). rms: Regression Modeling Strategies_. R package version 6.7-1, <https://CRAN.R-project.org/package=rms>
+#'   
 #'   Harrell Jr F (2023). Hmisc: Harrell Miscellaneous_. R package version 5.1-1, <https://CRAN.R-project.org/package=Hmisc>
 
 #' @examples
@@ -40,7 +41,7 @@
 #'                     outfile = paste0(temp_dir, "/survival_XGBoost"))
 #' ptxfit = XGBtraining_predict(txfit, newdata = vdat,
 #'                     outfile = paste0(temp_dir, "/pred_XGBoost_time_to_event"))
-#' # To delete the temp_dir, use the following:
+#' # To delete the "temp_dir", use the following:
 #' unlink(temp_dir)
 
 

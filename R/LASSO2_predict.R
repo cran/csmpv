@@ -8,14 +8,17 @@
 #' @param newdata A new data matrix or data frame where samples are in rows and features/traits are in columns.
 #' @param newY The outcome variable for the new data set.
 #' @param u A single numeric follow-up time for survival outcomes.
-#' @param outfile A string for the output file including the path, if necessary, but without the file type extension.
+#' @param outfile A string representing the output file, including the path if necessary, but without the file type extension.
 #' @author Aixiang Jiang
 #' @import glmnet
 #' @return A vector of predicted values is returned.
 #' @references 
 #'   Friedman, J., Hastie, T. and Tibshirani, R. (2008) Regularization Paths for Generalized Linear Models via Coordinate Descent (2010), Journal of Statistical Software, Vol. 33(1), 1-22, doi:10.18637/jss.v033.i01.
+#'   
 #'   Simon, N., Friedman, J., Hastie, T. and Tibshirani, R. (2011) Regularization Paths for Cox's Proportional Hazards Model via Coordinate Descent, Journal of Statistical Software, Vol. 39(5), 1-13, doi:10.18637/jss.v039.i05.
+#'   
 #'   Harrell Jr F (2023). rms: Regression Modeling Strategies_. R package version 6.7-1, <https://CRAN.R-project.org/package=rms>
+#'   
 #'   Harrell Jr F (2023). Hmisc: Harrell Miscellaneous_. R package version 5.1-1, <https://CRAN.R-project.org/package=Hmisc>
 #'
 #' @examples
@@ -41,7 +44,7 @@
 #' #                     outfile = paste0(temp_dir, "/pred_LASSO2_time_to_event"))
 #' # You might save the files to the directory you want.
 #' 
-#' # To delete the temp_dir, use the following:
+#' # To delete the "temp_dir", use the following:
 #' unlink(temp_dir)
 
 #' @export
@@ -72,16 +75,10 @@ LASSO2_predict = function(lassoObj, newdata = NULL,newY = FALSE, u=2, outfile = 
   vars = names(coefs)
   
   if(length(vars)>=1 & vars[1] == "(Intercept)"){
-    #model_score = model_score + coefs[1]
     vars = setdiff(vars, "(Intercept)")
-    #coefs = coefs[-1]
   }
-  # 
-  # newvars = newdata[,vars]
-  # model_score = model_score + as.numeric(data.matrix(newvars) %*% data.matrix(coefs))
-  # outs = NA
   
-  model_score = 0 ## since lassobj contains different items for different outcome, models_score will be calcualted within if loop
+  model_score = 0 ## since lassobj contains different items for different outcome, models_score will be calculated within if loop
 
   # ## make some basic transformation and call validation function for each outcome type
   if(outcomeType == "continuous"){

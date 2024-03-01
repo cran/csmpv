@@ -28,7 +28,8 @@ LASSO_plus_XGBtraining(
 
 \item{standardization}{A logical variable to indicate if standardization is needed before variable selection. The default is FALSE.}
 
-\item{columnWise}{A logical variable to indicate if column wise or row wise normalization is needed. The default is TRUE, which us tod do column-wise normalization. This is only meaningful when "standardization" is TRUE.}
+\item{columnWise}{A logical variable to indicate if column-wise or row-wise normalization is needed. The default is TRUE, 
+which is to do column-wise normalization. This is only meaningful when "standardization" is TRUE.}
 
 \item{biomks}{A vector of potential biomarkers for variable selection. They should be a subset of "data" column names.}
 
@@ -52,7 +53,7 @@ LASSO_plus_XGBtraining(
 
 \item{eta}{The learning rate for the XGBoost model.}
 
-\item{outfile}{A string for the output file including path if necessary but without file type extension.}
+\item{outfile}{A string representing the output file, including the path if necessary, but without the file type extension.}
 
 \item{height}{An integer to indicate the forest plot height in inches.}
 }
@@ -61,7 +62,7 @@ A list is returned:
 \item{XGBoost_model}{An XGBoost model}
 \item{XGBoost_model_score}{Model scores for the given training data set. 
  For a continuous outcome variable, this is a vector of the estimated continuous values; 
- for a binary outcome variable, this is a vector representing the probability or log-odds of the positive class;
+ for a binary outcome variable, this is a vector representing the probability of the positive class;
  for time-to-event outcome, this is a vector of risk scores}
 }
 \description{
@@ -85,12 +86,14 @@ clpxfit = LASSO_plus_XGBtraining(data = tdat, biomks = Xvars,
           outfile = paste0(temp_dir, "/continuous_LASSO_plus_XGBoost"))
 # You might save the files to the directory you want.
 
-# To delete the temp_dir, use the following:
+# To delete the "temp_dir", use the following:
 unlink(temp_dir)
 }
 \references{
 Friedman, J., Hastie, T. and Tibshirani, R. (2008) Regularization Paths for Generalized Linear Models via Coordinate Descent (2010), Journal of Statistical Software, Vol. 33(1), 1-22, doi:10.18637/jss.v033.i01.
+
   Simon, N., Friedman, J., Hastie, T. and Tibshirani, R. (2011) Regularization Paths for Cox's Proportional Hazards Model via Coordinate Descent, Journal of Statistical Software, Vol. 39(5), 1-13, doi:10.18637/jss.v039.i05.
+  
   Tianqi Chen and Carlos Guestrin, "XGBoost: A Scalable Tree Boosting System", 22nd SIGKDD Conference on Knowledge Discovery and Data Mining, 2016, https://arxiv.org/abs/1603.02754
 }
 \author{

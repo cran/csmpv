@@ -15,7 +15,7 @@ vignette: >
 knitr::opts_chunk$set(fig.width=6, fig.height=4.5) # Set the width and height
 ```
 
-The csmpv R package offers a comprehensive array of functions covering biomarker confirmation, variable selection, modeling, predictive analysis, and validation. Its primary objectives encompass:
+The csmpv R package provides an extensive set of functions that encompass biomarker confirmation, variable selection, modeling, predictive analysis, and validation. It can handle diverse outcome variable types, including binary, continuous, and time-to-event data. Its key objectives include:
 
 - Biomarker Confirmation/Validation: This feature employs both single-variable and multivariable regression techniques to confirm and validate established biomarkers.
 
@@ -29,9 +29,7 @@ The csmpv R package offers a comprehensive array of functions covering biomarker
 
 To simplify the modeling process, we've designed an all-in-one function capable of managing predictive model development, prediction, and validation for all eight methods within this package across three distinct outcome types. This versatile function streamlines the process, allowing for a concise implementation with just a single function call. It can handle a single method with single or multiple outcome variables. Moreover, if a validation dataset is available, the prediction and validation processes can seamlessly integrate into a unified operation.
 
-In addition to these core functionalities, the csmpv package introduces a unique approach allowing the creation of binary classification models based on survival models. This innovative feature enables predicting binary outcomes for new datasets using the developed model. Please note, the external validation of this model is limited due to the absence of binary classification variables in new datasets. Despite this limitation, the predicted binary classification can serve as a surrogate biomarker, and its correlation with survival outcomes in new datasets can be tested when survival outcome information is available.
-
-The package excels in handling various outcome variable types—binary, continuous, and time-to-event data.
+In addition to these core functionalities, the csmpv package introduces a unique approach allowing the creation of binary risk classification models based on survival models. This innovative feature enables predicting risk binary outcomes for new datasets using the developed model. Please note, the external validation of this model is limited due to the absence of binary classification variables in new datasets. Despite this limitation, the predicted binary classification can serve as a surrogate biomarker, and its correlation with survival outcomes in new datasets can be tested when survival outcome information is available.
 
 To enhance user experience, the csmpv R package focuses on streamlining coding efforts. Each user-end function acts as a comprehensive wrapper condensing multiple analyses into a single function call. Additionally, result files are conveniently saved locally, further simplifying the analytical process.
 
@@ -74,12 +72,9 @@ In this section, we will show some example code, however, before that, we will i
 
 The example data was extracted from our in-house diffuse large B-cell lymphoma (DLBCL) dataset, specifically utilizing supplemental Table S1 from Alduaij et al. (2023, DOI: 10.1182/blood.2022018248).
 
-Upon identifying a substantial amount of missing data, accounting for only 38% complete cases, we conducted Little’s MCAR test, revealing non-randomness in the missing values. This directed our focus toward handling rather than excluding them. Implementing multiple imputation emerged as a robust strategy for addressing this issue, showcasing its versatility and effectiveness across various missing data scenarios. However, for illustrative purposes, we generated only one imputation.
-
-Furthermore, to ensure compatibility with all eight modeling methods within csmpv, we transformed all categorical variables into binary format, overcoming limitations in XGBoost and LASSO when dealing with categorical variables with more than two levels.
+To handle missing values, we retained only samples with all the necessary variables and no missing values. Furthermore, to ensure compatibility with all eight modeling methods within csmpv, we transformed all categorical variables into binary format, overcoming limitations in XGBoost (eXtreme Gradient Boosting) and LASSO (Least Absolute Shrinkage and Selection Operator) when dealing with categorical variables with more than two levels.
 
 Following these procedures, an object named datlist was generated and is included in csmpv, accessible straightforwardly after installing and loading csmpv, as demonstrated below.
-
 
 ``` {r}
 library(csmpv)
@@ -99,7 +94,7 @@ To illustrate different types of outcome variables, we'll define examples for bi
 For binary and time-to-event variables, independent variables are defined as:
 
 ```{r}
-Xvars = c("highIPI","B.Symptoms","MYC.IHC","BCL2.IHC", "CD10.IHC","BCL6.IHC",
+Xvars = c("B.Symptoms","MYC.IHC","BCL2.IHC", "CD10.IHC","BCL6.IHC",
  "MUM1.IHC","Male","AgeOver60", "stage3_4","PS1","LDH.Ratio1",
  "Extranodal1","Bulk10cm","HANS_GCB", "DTI")
 ```
@@ -119,7 +114,6 @@ Users can define their own temporary directory to save all results. If not, temp
 
 ```{r}
 temp_dir = tempdir()
-# setwd(temp_dir) # this only affect this chunk, not for other part
 knitr::opts_knit$set(root.dir = temp_dir)
 ```
 
@@ -147,7 +141,7 @@ print(bconfirm$fit)
 bconfirm$allplot[[2]]
 ```
 
-For instance, the initial output showcases a multivariable model. In the subsequent section, single-variable models are presented with associated forest plots, all amalgamated into a comprehensive display.
+For instance, the above output showcases a multivariable model and it's corresponding forest plot.
 
 ### 2.2 Continous outcome
 To confirm biomarkers for continuous outcomes:
@@ -162,7 +156,7 @@ The same confirmVars function is called; however, this time, we specify the outc
 
 In a similar fashion, the cconfirm object comprises two elements: a multivariable model and a list of two forest plots. The first plot consolidates all forest plots for each single variable, while the second represents the forest plot for the multivariable model. All these outputs are saved locally, accompanied by a combined table containing models for each single variable.
 
-Below, you'll find the multivariable model and a combined forest plot for each variable with raw p-values:
+Below, you'll find the multivariable model and it's corresponding forest plot:
 
 ```{r}
 print(cconfirm$fit)
@@ -181,9 +175,9 @@ tconfirm = confirmVars(data = tdat, biomks = Xvars,
 
 The confirmVars function is called once again, this time with the outcome type specified as time-to-event, necessitating the inclusion of both time and event variable names.
 
-Similarly, two PDF and two table files are saved, accompanied by locally stored Kaplan-Meier plots. A single Kaplan-Meier plot is generated for each independent categorical variable with no more than four levels. In this example dataset, 15 Kaplan-Meier plots are produced.
+Similarly, two PDF and two table files are saved, accompanied by locally stored Kaplan-Meier plots. A single Kaplan-Meier plot is generated for each independent categorical variable with no more than four levels. 
 
-The tconfirm object continues to store two elements: a multivariable model and a list of two forest plots. Below, you'll find the multivariable model and a combined forest plot for each variable, including raw p-values:
+The tconfirm object also stores two elements: a multivariable model and a list of two forest plots. Below, you'll find the multivariable model and it's corresponding forest plot:
 
 ```{r}
 print(tconfirm$fit)
@@ -196,13 +190,13 @@ This section details the process of biomarker discovery through variable selecti
 
 ### 3.1 Variable selection with LASSO2
 
-The variable selection process using our customized LASSO algorithm, LASSO2, employs a tailored approach distinct from the conventional LASSO (Least Absolute Shrinkage and Selection Operator) algorithm. This adjustment aims to address the randomness introduced by random splits and to guarantee the inclusion of at least two variables.
+The variable selection process using our customized LASSO algorithm, LASSO2, employs a tailored approach distinct from the conventional LASSO algorithm. This adjustment aims to address the randomness introduced by random splits and to guarantee the inclusion of at least two variables.
 
-This process utilizes glmnet::cv.glmnet for cross-validation-based variable selection. It determines the largest lambda value where the error remains within 1 standard error of the minimum. However, as indicated in the cv.glmnet's help file, variability in results can arise due to the randomness inherent in cross-validation splits.
+This process utilizes glmnet::cv.glmnet for cross-validation-based variable selection, setting lambda as the largest value where the error remains within 1 standard error of the minimum. However, as indicated in the cv.glmnet's help file, variability in results can arise due to the randomness inherent in cross-validation splits.
 
-To counteract this variability, our new function, LASSO2, conducts 10 runs of 10-fold cv.glmnet. The resulting average lambda value from these iterations becomes the final lambda used for regularization regression on the complete dataset.
+To counteract this variability, our new function, LASSO2, performs 10 runs of glmnet::cv.glmnet. The resulting average lambda value from these iterations becomes the final lambda used for regularization regression on the complete dataset.
 
-It's important to note that since LASSO2 selects the largest lambda within 1 standard error of the minimum, following the default behavior of cv.glmnet, it may yield a smaller number of selected variables compared to the lambda that minimizes the mean cross-validated error. This more conservative approach could potentially result in only one or no selected variables.
+It's important to note that since LASSO2 selects the lambda as the largest lambda within 1 standard error of the minimum, following the default behavior of cv.glmnet, it may yield a smaller number of selected variables compared to the lambda that minimizes the mean cross-validated error. This more conservative approach could potentially result in only one or no selected variables.
 
 To address this potential issue, when LASSO2 identifies only one or no variables, it defaults to selecting the first lambda that results in at least two variables being chosen from the full dataset. This strategy ensures the inclusion of at least two variables, striking a balance between model complexity and the necessity for meaningful variable inclusion.
 
@@ -259,10 +253,10 @@ This shows the selected variables and their associated shrunk coefficients for t
 ### 3.2 Variable selection with LASSO2plus
 
 LASSO2plus is an innovative approach that combines LASSO2, a modified LASSO algorithm, with other techniques. It selects variables in three steps:
-- applying LASSO2, which is slightly different from the standard LASSO as discussed in Section 3.1;
-- fitting a simple regression model for each variable and adjusting the p-values using the Benjamini Hochberg method (1995);
-- performing a stepwise variable selection procedure on the combined list of variables from the previous steps. 
-Therefore, LASSO2plus incorporates both the regularization and the significance testing aspects of variable selection.
+- Apply LASSO2, which is slightly different from the standard LASSO as discussed in Section 3.1.
+- Fit a simple regression model for each variable and adjusting the p-values using the Benjamini Hochberg method (1995).
+- Perform a stepwise variable selection procedure on the combined list of variables from the previous steps. 
+Therefore, LASSO2plus can incorporates both the regularization and the significance testing aspects of variable selection.
 
 All parameter settings for LASSO2plus are the same as for LASSO2. 
 
@@ -303,19 +297,18 @@ t2fit$fit$coefficients
 Similar to the other types of outcomes, the coefficients are displayed above, and two figures along with two tables are stored locally.
 
 ### 3.3. Variable selection with LASSO_plus
-LASSO_plus is another innovative approach that builds on the LASSO algorithm and adds more techniques. However, it differs from LASSO2plus that is described in Section 3.2 in its initial step. It selects variables in three steps:
+LASSO_plus is another innovative approach that builds on the LASSO algorithm and adds more techniques. However, it differs from LASSO2plus that is described in Section 3.2 in its initial step. It selects variables in the following three steps:
 
-- 1) using a “Modified LASSO” instead of LASSO2, which selects a stable variable list that also matches a predefined target number;
-- 2) fitting a simple regression model for each variable and adjusting the p-values using the Benjamini Hochberg method (1995);
-- 3) performing a stepwise variable selection procedure on the combined list of variables from the previous steps. Therefore, LASSO_plus also incorporates both the regularization and the significance testing aspects of variable selection.
+- 1) Utilize 'Modified LASSO' for regularization regression instead of LASSO2 involves selecting a list, appearing at least two times during lambda simulations, based on the number of variables, and aiming to find the one nearest to a predefined target.
+- 2) Fit a simple regression model for each variable and adjusting the p-values using the Benjamini Hochberg method (1995);
+- 3) Perform a stepwise variable selection procedure on the combined list of variables from the previous steps. Therefore, LASSO_plus also incorporates both the regularization and the significance testing aspects of variable selection.
 
 In LASSO_plus, all parameters from LASSO2 and LASSO2plus are retained, with the addition of the unique parameter topN. 
 Please be aware that the topN parameter in LASSO_plus serves as a guide for variable selection. 
 
-
 #### Binary outcome
 
-Setting the topN parameter to 5 aims to include the top 5 variables in the final model. However, it's important to note that the resulting model may not always precisely consist of 5 variables. The LASSO_plus method's selection criteria involve considering variables that appear at least twice across different lambda values. Consequently, even when using the same topN value for different datasets, the number of selected variables may vary.
+Setting the topN parameter to 5 is intended to incorporate the top 5 variables into the final model. However, it's important to note that the resulting model may not always precisely comprise 5 variables. Consequently, when using the same topN value for different datasets, the number of selected variables may vary.
 
 For binary outcomes, outcome type specification is unnecessary, as it defaults to this type.
 
@@ -411,7 +404,7 @@ tlr = LASSO2_reg(data = tdat, biomks = Xvars,
 tlr$fit$coefficients
 ```
 
-The selected variables and their coefficients are shown above. For each outcome type, three figure files, one text file, and two tables are saved locally. Additionally, for time-to-event outcome variables, Kaplan-Meier plots are generated and saved locally. A single Kaplan-Meier plot is generated for each independent categorical variable with no more than four levels. In this example dataset, 15 Kaplan-Meier plots are generated.
+The selected variables and their coefficients are displayed above. For each outcome type, three figure files, one text file, and two tables are saved locally. Furthermore, Kaplan-Meier plots are generated and saved locally for time-to-event outcome variables. Specifically, a single Kaplan-Meier plot is produced for each independent categorical variable, with no more than four levels.
 
 ### 4.3 LASSO_plus
 Directly use coefficients from LASSO2_plus output as shown in Section 3.3.
@@ -421,7 +414,7 @@ Directly use coefficients from the LASSO2plus output, as described in Section 3.
 
 ### 4.5 XGBoost
 
-XGBoost is a powerful machine learning algorithm recognized for its boosting capabilities. The XGBtraining function within the csmpv package leverages the strengths of XGBoost for model training. As XGBoost doesn't inherently feature a dedicated variable selection procedure, you'll need to manually define or select a set of variables using other methods. Once you have a predefined set of variables for constructing an XGBoost model, the XGBtraining function in the csmpv package streamlines this process.
+XGBoost is a powerful machine learning algorithm recognized for its boosting capabilities. The XGBtraining function within the csmpv package leverages the strengths of XGBoost for model training. As XGBoost doesn’t inherently feature a dedicated variable selection procedure, you’ll need to manually define or select a set of variables using other methods. Once you have a predefined set of variables for constructing an XGBoost model, the XGBtraining function in the csmpv package streamlines this process.
 
 #### Binary outcome
 
@@ -449,9 +442,9 @@ cxfit = XGBtraining(data = tdat, biomks = AgeXvars,
 head(cxfit$XGBoost_score)
 ```
 
-The reported values, train-rmse, signify the RMSE metric calculated during each iteration of the XGBoost model on the training set. RMSE measures the average variance between predicted and actual values within the training set, where lower values indicate superior model performance. The output is saved locally as a text file.
+The reported values, denoted by "train-rmse", signify the RMSE metric calculated during each iteration of the XGBoost model on the training set. RMSE measures the root mean squared error between predicted and actual values in the training set, with lower values indicating superior model performance. The results are saved locally in a text file.
 
-These metrics illustrate the iterative nature of training the XGBoost model, where each iteration aims to minimize the RMSE on the training set. The diminishing RMSE values signify the model's learning process, showcasing its progressive improvement in predictive accuracy during training.
+These metrics illustrate the iterative nature of training the XGBoost model, where each iteration aims to minimize the RMSE on the training set. The diminishing RMSE values signify the model's learning process, demonstrating its progressive improvement in predictive accuracy during training.
 
 Within cxfit, there are four elements:
 
@@ -484,7 +477,7 @@ In txfit, there are six components:
 - Outcome type.
 
 ### 4.6 LASSO2 + XGBoost
-Combine LASSO2 variable selection with XGBoost modeling using the LASSO2_XGBtraining function, which selects variables via LASSO2 but constructs an XGBoost model without relying on shrunk coefficients. The resulting objects maintain the output format of the XGBtraining function.
+Combine LASSO2 variable selection with XGBoost modeling using the LASSO2_XGBtraining function, which selects variables via LASSO2 but constructs an XGBoost model without relying on shrunk coefficients. The resulting objects maintain the same format as XGBtraining, while the results related to LASSO2 and XGBoost are saved locally.
 
 #### Binary outcome
 
@@ -514,9 +507,9 @@ head(tlxfit$XGBoost_score)
 ```
 
 ### 4.7 LASSO_plus  + XGBoost
-To combine LASSO_plus variable selection with XGBoost modeling, the LASSO_plus_XGBtraining R function is employed. This approach selects variables using LASSO_plus but does not utilize the coefficients from LASSO_plus to construct the model; instead, it generates an XGBoost model. The resulting output mirrors that of the XGBtraining function.
+To combine LASSO_plus variable selection with XGBoost modeling, the LASSO_plus_XGBtraining R function is employed. This approach selects variables using LASSO_plus but does not utilize the coefficients from LASSO_plus to construct the model; instead, it generates an XGBoost model. 
 
-The output and format of the returned objects are identical to those of the XGBtraining function. Furthermore, for each outcome type, one figure, one text, and one table file are saved locally.
+The format of the returned objects are identical to those of the XGBtraining function, while results related to LASSO_plus and XGBoost are saved locally.
 
 #### Binary outcome
 
@@ -525,9 +518,7 @@ blpxfit = LASSO_plus_XGBtraining(data = tdat, biomks = Xvars, Y = "DZsig",
                                  topN = 5,outfile = "binary_LASSO_plus_XGBoost")
 head(blpxfit$XGBoost_score)
 ```
-The majority of the outputs stem from LASSO_plus, with the final portion being attributed to XGBoost. Each line within the XGBoost output denotes the training log-loss value for a specific iteration of the model. Log-loss, a widely used loss function in classification tasks, gauges the alignment between the model's predicted probabilities and the actual class labels. The default number of iterations in XGBtraining is 5.
-
-The blpxfit output comprises four items: the first item corresponds to the XGBoost object, while the second item presents the XGBoost scores for all entries in the tdat dataset. Notably, XGBoost is a black box model that does not yield coefficients; however, model scores are provided. For binary outcomes, the model score pertains to the probability of the positive class. The remaining two items are the observed outcome and the outcome type.
+The majority of the outputs stem from LASSO_plus, with the final portion being attributed to XGBoost.
 
 #### Continuous outcome
 
@@ -538,12 +529,7 @@ clpxfit = LASSO_plus_XGBtraining(data = tdat, biomks = AgeXvars,
 head(clpxfit$XGBoost_score)
 ```
 
-Similar to the previous scenario, the primary outputs stem from LASSO_plus, while the concluding section originates from XGBoost. Within the XGBoost output, the train-rmse values reflect the root mean squared error (RMSE) metric calculated during each iteration of the XGBoost model. The RMSE gauges the average discrepancy between the predicted and actual values in the training set, with lower values signifying improved model performance.
-
-These lines indicate that the XGBoost model undergoes iterative training, with each iteration aimed at minimizing the RMSE on the training set. The declining RMSE values suggest that the model progressively learns from the data, enhancing its predictive capabilities.
-
-The clpxfit output includes four components: the first represents the XGBoost object, and the second offers XGBoost scores for all entries in the tdat dataset. Similar to before, XGBoost is a black box model that does not yield coefficients; however, model scores are provided. For continuous outcomes, the model score pertains to the estimated continuous values. The remaining two components are the observed outcome and the outcome type.
-
+Similar to the previous scenario, the primary outputs stem from LASSO_plus, while the concluding section originates from XGBoost. 
 
 #### Time-to-event outcome
 
@@ -554,16 +540,12 @@ tlpxfit = LASSO_plus_XGBtraining(data = tdat, biomks = Xvars,
                                  topN = 5,outfile = "survival_LASSO_plus_XGBoost")
 head(tlpxfit$XGBoost_score)
 ```
-Analogous to the previous cases, the bulk of the outputs originate from LASSO_plus, while the final segment is attributed to XGBoost. Within the XGBoost output, the negative log-likelihood serves as a prevalent loss function in survival analysis, encompassing Cox proportional hazards models. It quantifies the dissimilarity between the projected survival probabilities and the observed survival times and events in the training data. The objective is to minimize this metric, as lower values denote a superior fit of the model to the training data.
-
-Monitoring the negative log-likelihood throughout training enables the assessment of the model's capacity to learn from the data and its convergence towards an optimal solution. Ideally, a diminishing trend in the negative log-likelihood signifies an improved fit of the model to the training data across iterations.
-
-The tlpxfit output comprises six components: the first represents the XGBoost object, and the second provides XGBoost scores for all entries in the tdat dataset. Similar to earlier instances, XGBoost is a black box model that does not yield coefficients; however, model scores are provided. For time-to-event outcomes, the model score pertains to the risk score. The remaining four components encompass the baseline hazard table, observed time, event, and outcome type.
+Analogous to the previous cases, the bulk of the outputs originate from LASSO_plus, while the final segment is attributed to XGBoost.
 
 ### 4.8 LASSO2plus  + XGBoost
 To seamlessly integrate LASSO2plus variable selection with XGBoost modeling, we leverage the LASSO2plus_XGBtraining R function. This hybrid approach utilizes LASSO2plus for variable selection but diverges from using its coefficients to construct the model. Instead, it generates an XGBoost model, producing an output akin to that of the XGBtraining function.
 
-The output and format of the returned objects mirror those of the XGBtraining function. Furthermore, for each outcome type, the process generates two figures, two text files, and one table, saving them locally.
+The format of the returned objects mirror those of the XGBtraining function, while results related to LASSO2plus and XGBoost are saved locally.
 
 #### Binary outcome
 ```{r, warning=FALSE}
@@ -572,9 +554,7 @@ bl2xfit = LASSO2plus_XGBtraining(data = tdat, biomks = Xvars, Y = "DZsig",
 head(bl2xfit$XGBoost_score)
 ```
 
-The primary outputs stem from LASSO2plus, while the latter part pertains to XGBoost. In the XGBoost output, each line denotes the training log-loss value for a specific model iteration. Log-loss, a widely used classification loss function, assesses the alignment between predicted probabilities and actual class labels. By default, the XGBtraining runs for 5 iterations.
-
-The bl2xfit output comprises four components: the first being the XGBoost object, followed by the XGBoost scores for all entries in the tdat dataset. Notably, XGBoost, being a black box model, doesn't yield coefficients but provides model scores. For binary outcomes, these scores represent the probability of the positive class. The remaining two items include the observed outcome and the outcome type.
+The primary outputs stem from LASSO2plus, while the latter part pertains to XGBoost. 
 
 #### Continuous outcome
 ```{r, warning=FALSE}
@@ -584,11 +564,7 @@ cl2xfit = LASSO2plus_XGBtraining(data = tdat, biomks = AgeXvars,
 head(cl2xfit$XGBoost_score)
 ```
 
-Similar to the previous case, the primary outputs arise from LASSO2plus, while the final section pertains to XGBoost. Within the XGBoost output, the train-rmse values signify the root mean squared error (RMSE) calculated during each iteration. RMSE measures the average discrepancy between predicted and actual values in the training set, with lower values indicating improved model performance.
-
-The declining RMSE values showcase the iterative training of the XGBoost model, where each iteration aims to minimize the RMSE on the training set, indicating progressive learning and enhanced predictive abilities.
-
-The cl2xfit output also includes four components: the XGBoost object, XGBoost scores for all entries in tdat, observed outcome, and outcome type.
+Similar to the previous case, the primary outputs arise from LASSO2plus, while the final section pertains to XGBoost.
 
 #### Time-to-event outcome
 ```{r, warning=FALSE}
@@ -599,11 +575,7 @@ tl2xfit = LASSO2plus_XGBtraining(data = tdat, biomks = Xvars,
 head(tl2xfit$XGBoost_score)
 ```
 
-Similarly, most outputs arise from LASSO2plus, while the final section pertains to XGBoost. In the XGBoost output, the negative log-likelihood serves as a prevalent loss function in survival analysis, encompassing Cox proportional hazards models. It quantifies dissimilarity between projected survival probabilities and observed survival times and events in the training data, aiming to minimize this metric for a better fit.
-
-Monitoring the negative log-likelihood throughout training allows assessment of the model's learning from data, ideally showcasing a decreasing trend signifying an improved fit to training data.
-
-The tl2xfit output contains six components: XGBoost object, XGBoost scores for tdat, baseline hazard table, observed time, event, and outcome type.
+Similarly, most outputs arise from LASSO2plus, while the final section pertains to XGBoost.
 
 
 ## 5. Model prediction 
@@ -646,7 +618,7 @@ The ptl object holds predicted risk scores for each entry/sample.
 
 ### 5.2 LASSO2 + regular regression prediction 
 
-Moving forward, let's explore predictions concerning the combined LASSO2 and regular regression model outcomes. The function rms_model specifically caters to model prediction when utilizing a regular modeling object like those produced by LASSO2_reg. Upon performing predictions for binary and continuous outcomes, this step generates one figure and five tables. Additionally, for time-to-event outcomes, an extra table is generated. These resulting files are all saved locally for convenient access.
+Moving forward, let's explore predictions regarding the regression model using selected variables from LASSO2. The function rms_model specifically caters to model prediction when utilizing a regular modeling object like those produced by LASSO2_reg. Upon performing predictions for binary and continuous outcomes, this step generates one figure and five tables. Additionally, for time-to-event outcomes, an extra table is generated. These resulting files are all saved locally for convenient access.
 
 #### Binary ouctome
 
@@ -757,7 +729,7 @@ ptxfit = XGBtraining_predict(txfit, newdata = vdat,
 
 ### 5.6 LASSO2 + XGBoost prediction
 
-Next, we explore predictions for the combined LASSO and XGBoost model outcomes.
+Next, we explore predictions for the combined LASSO2 and XGBoost model outcomes.
 
 #### Binary ouctome
 To predict binary outcomes:
@@ -871,7 +843,7 @@ vtl = LASSO2_predict(tl, newdata = vdat, newY = TRUE,
 The returned object vtl keeps the predicted risk scores, and locally saved validation results include a calibration plot and a table containing performance statistics.
 
 ### 6.2 LASSO2 + regular regression validation
-Similar to prediction step, we use rms_model to validate the combined LASSO2 and regular regression model.
+Similar to prediction step, we use rms_model to validate the regular regression model using the selected variables from LASSO2.
 
 #### Binary ouctome
 ```{r}
@@ -902,7 +874,7 @@ Same as for prediction step, validation of time-to-event outcome requires traini
 
 ### 6.3 LASSO_plus validation
 
-Next, we utilize the same rms_model function for validating the LASSO_plus models. The parameter settings and outputs mirror those detailed in the combined LASSO2 and regular regression validation validation of Section 6.2.
+Next, we utilize the same rms_model function for validating the LASSO_plus models, with parameter settings and outputs mirroring those detailed in the model validation of Section 6.2.
 
 #### Binary ouctome
 ```{r}
@@ -924,7 +896,7 @@ vtfit = rms_model(tfit$fit, data = tdat, newdata = vdat, newY = TRUE,
 
 
 ### 6.4 LASSO2plus validation
-Additionally, we leverage the same rms_model function to validate the LASSO_plus models. The parameter configurations and outputs align with those outlined in the combined LASSO2 and regular regression validation detailed in Section 6.2.
+Additionally, we leverage the same rms_model function to validate the LASSO_plus models. The parameter configurations and outputs align with those outlined in the regression validation detailed in Section 6.2.
 
 #### Binary ouctome
 ```{r}
@@ -946,7 +918,7 @@ v2tfit = rms_model(t2fit$fit, data = tdat, newdata = vdat, newY = TRUE,
 
 ### 6.5 XGBoost validation
 
-The XGBtraining_predict function introduced in Section 5.5, as indicated by its name, also serves for model validation when the outcome variable is present in the validation cohort. The parameter settings and outputs are the same as those for the LASSO2_prediction function detailed in Section 6.1.
+The XGBtraining_predict function introduced in Section 5.5, also serves for model validation when the outcome variable is present in the validation cohort. The parameter settings and outputs are the same as those for the LASSO2_prediction function detailed in Section 6.1.
 
 #### Binary ouctome
 ```{r}
@@ -1044,7 +1016,7 @@ vtl2xfit = XGBtraining_predict(tl2xfit, newdata = vdat, newY = TRUE,
 
 
 ## 7. All-in-one!
-If you find it challenging to call various functions separately, the all-in-one function provides a simplified solution. It efficiently manages predictive model development and validation for all six methods integrated into this package, spanning three distinct outcome types, with a single function call. Moreover, you can employ this versatile function for a single method with one or more outcome variables, offering flexibility to suit your specific needs. If a validation dataset is at your disposal, the function seamlessly incorporates the validation process within the same operation.
+If you find it challenging to call various functions separately, the all-in-one function provides a simplified solution. It efficiently manages predictive model development and validation for all eight methods integrated into this package, spanning three distinct outcome types, with a single function call. Moreover, you can employ this versatile function for a single method with one or more outcome variables, offering flexibility to suit your specific needs. If a validation dataset is at your disposal, the function seamlessly incorporates the validation process within the same operation.
 
 ```{r, eval = FALSE}
 modelout = csmpvModelling(tdat = tdat, vdat = vdat,
@@ -1055,7 +1027,7 @@ modelout = csmpvModelling(tdat = tdat, vdat = vdat,
                           outfileName= "all_in_one")
 ```
 
-This single function call generates all models and provides predictions and validations for each of them. To save space, the running results are hidden. In other words, this single function call can replace all three sections discussed in Sections 4, 5, and 6. The models will be returned, and all 179 result files will be saved locally with our exmaple training data: tdat and validation data: vdat.
+This single function call generates all models and provides predictions and validations for each of them with our example training data: tdat and validation data: vdat.. To save space, the running results are hidden. In other words, this single function call can replace all three sections discussed in Sections 4, 5, and 6. The models will be returned, and all result files will be saved locally.
 
 Certainly, we can use this all-in-one function to work on one outcome variable and one model at a time, for example:
 
@@ -1066,42 +1038,65 @@ DZlassoreg = csmpvModelling(tdat = tdat, vdat = vdat,
                             outfileName= "just_one")
 ```
 
-This is equivalent to using LASSO2_reg for modeling, followed by prediction and validation with rms_model for the classification task "DZsig". Six result files are then saved locally.
-
+This is equivalent to using LASSO2_reg for modeling, followed by prediction and validation with rms_model for the "DZsig" classification. 
 
 ## 8. Special modelling
 In preceding sections, the target model type consistently matched the provided output. However, scenarios can emerge where they do not necessarily correspond.
 
 For instance, situations might arise in which we aim to construct a risk classification model even when our training cohort lacks risk classification data but includes survival information. 
 
-To undertake this specialized modeling, let's assume that we possess a set of variables associated with survival outcomes. This variable list could stem from other research and be validated within the given training dataset, or it could be established through variable selection techniques such as LASSO2, LASSO_plus and LASSO2plus.
+To undertake this specialized modeling, let's assume that we have a set of variables associated with survival outcomes. XGpred can utilize all of these variables and provides choices for variable selection within the functions with three options: LASSO2, LASSO2plus, and LASSO_plus.
 
-By employing the same variable list, denoted as Xvars, we can invoke the XGpred function with choices to perform variable selection with LASSO2. This wrapper function applies XGBoost and Cox modeling to get high and low risk groups using survival data. Subsequently, these groups undergo filtration and are utilized to construct both an XGpred (linear prediction score) model and an empirical Bayesian-based binary risk classification model.
+By employing the same variable list, denoted as Xvars, we can invoke the XGpred function with options to perform variable selection using LASSO_plus to identify the top 5 variables. This wrapper function applies XGBoost and Cox modeling to determine high and low-risk groups using survival data. Subsequently, these groups undergo filtration and are used to construct an empirical Bayesian-based binary risk classification model.
 
-Build the XGpred object for the training cohort:
 ``` {r,results = 'hide',message=FALSE, warnings=FALSE}
 xgobj = XGpred(data = tdat, varsIn = Xvars, 
                selection = TRUE,
+               vsMethod = "LASSO_plus",
+               topN = 5,
                time = "FFP..Years.",
-               event = "Code.FFP", outfile = "XGpred")
+               event = "Code.FFP", 
+               outfile = "XGpred")
 ```
 
-The XGpred output object, xgobj, contains all the necessary information for risk classification, including that of the training cohort.
+The XGpred output object, xgobj, encompasses all the essential information for risk classification, including that of the training cohort.
+
+By default, this function generates binary classification; any samples not classified into high-risk groups are placed into the low-risk group. When 'nclass' is set to 3, samples are categorized into low, middle, and high-risk groups, as demonstrated with the following code:
+
+``` {r,results = 'hide',message=FALSE, warnings=FALSE}
+xgobj3 = XGpred(data = tdat, varsIn = Xvars, 
+               time = "FFP..Years.",
+               event = "Code.FFP", 
+               selection = TRUE,
+               vsMethod = "LASSO_plus",
+               topN = 5,
+               nclass = 3,
+               outfile = "XGpred")
+```
 
 To observe the performance of the risk group in the training set, we can generate a KM plot using the confirmVars function:
 
 ```{r, results = 'hide',message=FALSE, warnings=FALSE}
-tdat$XGpred_class = xgobj$XGpred_prob_class
-training_risk_confirm = confirmVars(data = tdat, biomks = "XGpred_class",
+tdat$XGpred_class2 = xgobj$XGpred_prob_class
+training_risk_confirm2 = confirmVars(data = tdat, biomks = "XGpred_class2",
                                     time = "FFP..Years.", event = "Code.FFP",
-                                    outfile = "training_riskSurvival",
+                                    outfile = "training2grps_riskSurvival",
                                     outcomeType = "time-to-event")
-training_risk_confirm[[3]]
+training_risk_confirm2[[3]]
+
+tdat$XGpred_class3 = xgobj3$XGpred_prob_class
+training_risk_confirm3 = confirmVars(data = tdat, biomks = "XGpred_class3",
+                                    time = "FFP..Years.", event = "Code.FFP",
+                                    outfile = "training3grps_riskSurvival",
+                                    outcomeType = "time-to-event")
+training_risk_confirm3[[3]]
+
 ```
 
 Then we can predict the risk classification for a validation cohort:
 ``` {r}
 xgNew = XGpred_predict(newdat = vdat, XGpredObj = xgobj)
+xgNew3 = XGpred_predict(newdat = vdat, XGpredObj = xgobj3)
 ```
 
 While the default calibration shift (scoreShift) is set to 0, you can adjust it based on model scores if there's a platform/batch difference between the training and validation cohorts.
@@ -1109,12 +1104,19 @@ While the default calibration shift (scoreShift) is set to 0, you can adjust it 
 If survival data is available for the testing dataset, we can employ the confirmVars function introduced earlier to assess the reasonableness of risk classification.
 
 ```{r,results = 'hide',message=FALSE, warnings=FALSE }
-vdat$XGpred_class = xgNew$XGpred_prob_class
-risk_confirm = confirmVars(data = vdat, biomks = "XGpred_class",
+vdat$XGpred_class2 = xgNew$XGpred_prob_class
+risk_confirm2 = confirmVars(data = vdat, biomks = "XGpred_class2",
                            time = "FFP..Years.", event = "Code.FFP",
-                           outfile = "riskSurvival",
+                           outfile = "riskSurvival2grps",
                            outcomeType = "time-to-event")
-risk_confirm[[3]]
+risk_confirm2[[3]]
+vdat$XGpred_class3 = xgNew3$XGpred_prob_class
+risk_confirm3 = confirmVars(data = vdat, biomks = "XGpred_class3",
+                           time = "FFP..Years.", event = "Code.FFP",
+                           outfile = "riskSurvival3grps",
+                           outcomeType = "time-to-event")
+risk_confirm3[[3]]
+
 ```
 
 ## csmpv R package general information
@@ -1141,10 +1143,15 @@ Imports: survival, glmnet, Hmisc, rms, forestmodel, ggplot2, ggpubr,survminer, m
 devtools::session_info()
 ```
 
-Hastie et al. (1992, ISBN 0 534 16765-9), 
-Therneau et al. (2000, ISBN 0-387-98784-3), 
+Hastie et al. (1992, ISBN 0 534 16765-9)
+
+Therneau et al. (2000, ISBN 0-387-98784-3)
+
 Friedman et al. (2010) <doi:10.18637/jss.v033.i01>
+
 Simon et al. (2011) <doi:doi:10.18637/jss.v039.i05>
+
 Chen and Guestrin (2016) <arXiv:1603.02754>
+
 Aoki et al. (2023) <doi:10.1200/JCO.23.01115>
 

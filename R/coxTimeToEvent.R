@@ -36,15 +36,13 @@ coxTimeToEvent = function(datain, time, event, Xin, outfile = "nameWithPath"){
       pdf(paste(outfile, Xin, "KM.pdf", sep = "_"))
       print(newplot)
       dev.off()
-      #ggplot2::ggsave(paste(outfile, Xin, "KM.pdf", sep = "_"))
       newplot
     }
   }
   
   fit1 = survival::coxph(as.formula(paste(survY, survX, sep=" ~ ")), data = datain)
   
-  ## the following part is from my old function: coxphOutput
-    coxphObj = summary(fit1)
+  coxphObj = summary(fit1)
   
   ### focus on $coef, $conf.int
   coxcoef = coxphObj$coefficients

@@ -6,7 +6,8 @@
 #'
 #' @param data A data matrix or a data frame where samples are in rows, and features/traits are in columns.
 #' @param standardization A logical variable to indicate if standardization is needed before variable selection. The default is FALSE.
-#' @param columnWise A logical variable to indicate if column wise or row wise normalization is needed. The default is TRUE, which us tod do column-wise normalization. This is only meaningful when "standardization" is TRUE.
+#' @param columnWise A logical variable to indicate if column-wise or row-wise normalization is needed. The default is TRUE, 
+#' which is to do column-wise normalization. This is only meaningful when "standardization" is TRUE.
 #' @param biomks A vector of potential biomarkers for variable selection. They should be a subset of "data" column names. 
 #' @param outcomeType Outcome variable type. There are three choices: "binary" (default), "continuous", and "time-to-event".  
 #' @param Y Outcome variable name when the outcome type is either "binary" or "continuous". 
@@ -17,7 +18,7 @@
 #' @param nthread Number of parallel threads used to run XGBoost.
 #' @param gamma Minimum loss reduction required to make a further partition on a leaf node of the tree.
 #' @param max_depth Maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit.
-#' @param outfile A string for the output file including path if necessary but without file type extension.
+#' @param outfile A string representing the output file, including the path if necessary, but without the file type extension.
 #' @param eta The learning rate for the XGBoost model.
 #' @param height An integer to indicate the forest plot height in inches.
 #' 
@@ -25,13 +26,15 @@
 #' \item{XGBoost_model}{An XGBoost model}
 #' \item{XGBoost_model_score}{Model scores for the given training data set. 
 #'  For a continuous outcome variable, this is a vector of the estimated continuous values; 
-#'  for a binary outcome variable, this is a vector representing the probability or log-odds of the positive class;
+#'  for a binary outcome variable, this is a vector representing the probability of the positive class;
 #'  for time-to-event outcome, this is a vector of risk scores}
 #' @author Aixiang Jiang
 
 #' @references 
 #'   Friedman, J., Hastie, T. and Tibshirani, R. (2008) Regularization Paths for Generalized Linear Models via Coordinate Descent (2010), Journal of Statistical Software, Vol. 33(1), 1-22, doi:10.18637/jss.v033.i01.
+#'
 #'   Simon, N., Friedman, J., Hastie, T. and Tibshirani, R. (2011) Regularization Paths for Cox's Proportional Hazards Model via Coordinate Descent, Journal of Statistical Software, Vol. 39(5), 1-13, doi:10.18637/jss.v039.i05.
+#'   
 #'   Tianqi Chen and Carlos Guestrin, "XGBoost: A Scalable Tree Boosting System", 22nd SIGKDD Conference on Knowledge Discovery and Data Mining, 2016, https://arxiv.org/abs/1603.02754
 
 #' @examples
@@ -52,7 +55,7 @@
 #'           outfile = paste0(temp_dir, "/continuous_LASSO_plus_XGBoost"))
 #' # You might save the files to the directory you want.
 #' 
-#' # To delete the temp_dir, use the following:
+#' # To delete the "temp_dir", use the following:
 #' unlink(temp_dir)
 
 #' @export

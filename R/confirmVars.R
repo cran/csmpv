@@ -16,7 +16,7 @@
 #' @param Y The outcome variable name when the outcome type is either "binary" or "continuous".
 #' @param time The time variable name when the outcome type is "time-to-event".
 #' @param event The event variable name when the outcome type is "time-to-event".
-#' @param outfile A string for the output files, including the path if necessary but without the file type extension.
+#' @param outfile A string representing the output file, including the path if necessary, but without the file type extension
 #'
 #' @return A list containing:
 #' \item{fit}{A model with selected variables for the given outcome variable.}
@@ -25,8 +25,10 @@
 #' @author Aixiang Jiang
 #' @references 
 #'  Hastie, T. J. and Pregibon, D. (1992) Generalized linear models. Chapter 6 of Statistical Models in S eds J. M. Chambers and T. J. Hastie, Wadsworth & Brooks/Cole.
+#'  
 #'  Therneau, T., Grambsch, P., Modeling Survival Data: Extending the Cox Model. Springer-Verlag, 2000.
-#'  Kassambara A, Kosinski M, Biecek P (2021). survminer: Drawing Survival Curves using 'ggplot2'_. R package version 0.4.9,
+#'  
+#'  Kassambara A, Kosinski M, Biecek P (2021). survminer: Drawing Survival Curves using 'ggplot2', R package version 0.4.9,
 #'         <https://CRAN.R-project.org/package=survminer>.
 
 #' @examples
@@ -39,7 +41,7 @@
 #' temp_dir = tempdir()
 #' 
 #' # As an example, let's define Xvars, which will be used later:
-#' Xvars = c("highIPI", "B.Symptoms", "MYC.IHC", "BCL2.IHC", "CD10.IHC", "BCL6.IHC")
+#' Xvars = c("highIPI","B.Symptoms", "MYC.IHC", "BCL2.IHC", "CD10.IHC", "BCL6.IHC")
 #' 
 #' # confirmVars can work with three different outcome types. 
 #' # Here, we use binary as an example:

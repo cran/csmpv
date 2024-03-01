@@ -29,7 +29,7 @@ vdat = datlist$validation
 dim(vdat)
 
 ## -----------------------------------------------------------------------------
-Xvars = c("highIPI","B.Symptoms","MYC.IHC","BCL2.IHC", "CD10.IHC","BCL6.IHC",
+Xvars = c("B.Symptoms","MYC.IHC","BCL2.IHC", "CD10.IHC","BCL6.IHC",
  "MUM1.IHC","Male","AgeOver60", "stage3_4","PS1","LDH.Ratio1",
  "Extranodal1","Bulk10cm","HANS_GCB", "DTI")
 
@@ -41,7 +41,6 @@ set.seed(12345)
 
 ## -----------------------------------------------------------------------------
 temp_dir = tempdir()
-# setwd(temp_dir) # this only affect this chunk, not for other part
 knitr::opts_knit$set(root.dir = temp_dir)
 
 ## ----echo=FALSE---------------------------------------------------------------
@@ -442,27 +441,56 @@ DZlassoreg = csmpvModelling(tdat = tdat, vdat = vdat,
 ## ----results = 'hide',message=FALSE, warnings=FALSE---------------------------
 xgobj = XGpred(data = tdat, varsIn = Xvars, 
                selection = TRUE,
+               vsMethod = "LASSO_plus",
+               topN = 5,
                time = "FFP..Years.",
-               event = "Code.FFP", outfile = "XGpred")
+               event = "Code.FFP", 
+               outfile = "XGpred")
 
 ## ----results = 'hide',message=FALSE, warnings=FALSE---------------------------
-tdat$XGpred_class = xgobj$XGpred_prob_class
-training_risk_confirm = confirmVars(data = tdat, biomks = "XGpred_class",
+xgobj3 = XGpred(data = tdat, varsIn = Xvars, 
+               time = "FFP..Years.",
+               event = "Code.FFP", 
+               selection = TRUE,
+               vsMethod = "LASSO_plus",
+               topN = 5,
+               nclass = 3,
+               outfile = "XGpred")
+
+## ----results = 'hide',message=FALSE, warnings=FALSE---------------------------
+tdat$XGpred_class2 = xgobj$XGpred_prob_class
+training_risk_confirm2 = confirmVars(data = tdat, biomks = "XGpred_class2",
                                     time = "FFP..Years.", event = "Code.FFP",
-                                    outfile = "training_riskSurvival",
+                                    outfile = "training2grps_riskSurvival",
                                     outcomeType = "time-to-event")
-training_risk_confirm[[3]]
+training_risk_confirm2[[3]]
+
+tdat$XGpred_class3 = xgobj3$XGpred_prob_class
+training_risk_confirm3 = confirmVars(data = tdat, biomks = "XGpred_class3",
+                                    time = "FFP..Years.", event = "Code.FFP",
+                                    outfile = "training3grps_riskSurvival",
+                                    outcomeType = "time-to-event")
+training_risk_confirm3[[3]]
+
 
 ## -----------------------------------------------------------------------------
 xgNew = XGpred_predict(newdat = vdat, XGpredObj = xgobj)
+xgNew3 = XGpred_predict(newdat = vdat, XGpredObj = xgobj3)
 
 ## ----results = 'hide',message=FALSE, warnings=FALSE---------------------------
-vdat$XGpred_class = xgNew$XGpred_prob_class
-risk_confirm = confirmVars(data = vdat, biomks = "XGpred_class",
+vdat$XGpred_class2 = xgNew$XGpred_prob_class
+risk_confirm2 = confirmVars(data = vdat, biomks = "XGpred_class2",
                            time = "FFP..Years.", event = "Code.FFP",
-                           outfile = "riskSurvival",
+                           outfile = "riskSurvival2grps",
                            outcomeType = "time-to-event")
-risk_confirm[[3]]
+risk_confirm2[[3]]
+vdat$XGpred_class3 = xgNew3$XGpred_prob_class
+risk_confirm3 = confirmVars(data = vdat, biomks = "XGpred_class3",
+                           time = "FFP..Years.", event = "Code.FFP",
+                           outfile = "riskSurvival3grps",
+                           outcomeType = "time-to-event")
+risk_confirm3[[3]]
+
 
 ## -----------------------------------------------------------------------------
 devtools::session_info()

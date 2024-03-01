@@ -10,13 +10,7 @@
 LASSO_plus_timeToEvent = function(data, biomks,  time, event, topN = 10){
   
   vars = intersect(biomks, colnames(data))
-  
-  # # ### remove variables if their sd < 0.0000001
-  # sdcol = apply(data[, vars],2,sd, na.rm = TRUE)
-  # sdtmp = which(sdcol>0.0000001)
-  # sdtmp = names(sdcol)[sdtmp]
-  # data = data[,c(time, event, sdtmp)] 
-  
+ 
   ### remove NA for outcome side if there are any
   natmp = which(is.na(data[, event]))
   
@@ -28,19 +22,6 @@ LASSO_plus_timeToEvent = function(data, biomks,  time, event, topN = 10){
   
   lassoF = glmnet::glmnet(x= data.matrix(data[,vars]), y= surObj, family = "cox", type.measure = "C")
   allcoefs = data.matrix(lassoF$beta)
-  
-  #  is it necessary to save the lassoplot and lambda tables?
-  #   outfile = paste0("glm_",topN,"_",filename, "_", title)
-  #   lassoPlot = paste0(outfile, "_LASSO.pdf")
-  #   lassoCoef = gsub("pdf", "csv",lassoPlot)
-  #   
-  #   pdf(lassoPlot)
-  #   plot(lassoF)
-  #   #plotres(lassoF)
-  #   plot(lassoF,xvar="lambda",label=TRUE)
-  #   dev.off()
-  
-  ####################################################
   
   ## calculate how many variables are remained, and a0 is in a different output 
   coef01 = apply(allcoefs, c(1,2), FUN = function(xx) { ifelse(abs(xx) > 0.00001, 1, 0)})
@@ -105,11 +86,7 @@ LASSO_plus_timeToEvent = function(data, biomks,  time, event, topN = 10){
   fit1 = survival::coxph(as.formula(paste(survY, vX, sep=" ~ ")), data = data)
   
   fit2 = step(fit1)
-  # 
-  # if(length(names(fit2$coefficients)) < 1){
-  #   stop("No significant varaible was selected by LASSO_plus")
-  # }
-  
+ 
   ### final model
   lastvars = names(fit2$assign)
   survX = paste(lastvars, collapse=" + ")
