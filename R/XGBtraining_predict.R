@@ -9,11 +9,17 @@
 #' @param newY A logical variable indicating if 'newdata' contains the outcome variable.
 #' @param outfile A string for the output file including path if necessary but without file type extension. 
 #' @return A vector of predicted values is return. If an outcome variable is available for the new dataset, validation is performed.
-#' \item{predicted}{A vector of model prediction values. For continuous outcome, this is a vector of model scores; 
-#' for binary outcome, this is a vector representing the probability of the positive class;
-#' for time to event outcome, this is a vector of risk scores}
+#'         For continuous outcome, this is a vector of model scores. 
+#'         For binary outcome, this is a vector representing the probability of the positive class.
+#'         For time to event outcome, this is a vector of risk scores.
 #' @author Aixiang Jiang
 #' @import xgboost
+#' @import survival
+#' @importFrom stats .getXlevels
+#' @importFrom stats model.matrix
+#' @importFrom stats terms
+#' @importFrom stats model.frame
+
 #' @references 
 #'   Tianqi Chen and Carlos Guestrin, "XGBoost: A Scalable Tree Boosting System", 22nd SIGKDD Conference on Knowledge Discovery and Data Mining, 2016, https://arxiv.org/abs/1603.02754
 #'   
@@ -47,47 +53,94 @@
 
 #' @export
 
-XGBtraining_predict = function(xgbtrainingObj = NULL, newdata = NULL, newY = FALSE, outfile = "nameWithPath") {
-  if(is.null(xgbtrainingObj)){
-    stop("XGBtraining is null")
+XGBtraining_predict <- function(xgbtrainingObj = NULL, newdata = NULL, newY = FALSE, outfile = "nameWithPath") {
+  
+  # ========== INPUT VALIDATION ==========
+  if (is.null(xgbtrainingObj)) {
+    stop("xgbtrainingObj cannot be NULL")
+  }
+  if (is.null(newdata)) {
+    stop("newdata cannot be NULL")
+  }
+  if (!inherits(newdata, "data.frame")) {
+    stop("newdata must be a data.frame")
   }
   
-  testdat = newdata[,xgbtrainingObj$XGBoost_model$feature_names]
-  test = xgboost::xgb.DMatrix(as.matrix(testdat)) ## change to as.matrix from data.matrix to deal with potential one variable situation
-  scores = stats::predict(xgbtrainingObj$XGBoost_model, test) 
-  ## use default, for continuous, this is model score; for binary, this is prob of the positive class; 
-  ##   for time to event, this is risk score
-  names(scores) = rownames(newdata)
+  # ========== EXTRACT MODEL COMPONENTS ==========
+  model <- xgbtrainingObj$XGBoost_model
+  outcomeType <- xgbtrainingObj$outcomeType
   
-  baseHz = xgbtrainingObj$h0
-  Y = xgbtrainingObj$Y
-  time = xgbtrainingObj$time
-  event = xgbtrainingObj$event
-  outcomeType = xgbtrainingObj$outcomeType
-  
-  if(is.null(newdata)){
-    stop("Please input a data set")
+  if (is.null(model)) {
+    stop("XGBoost model not found in xgbtrainingObj")
   }
- 
-  outs = list(scores)
   
-  ## make some basic transformation and call validation function for each outcome type
-  if(outcomeType == "continuous"){
-    ## validation step: only when newY = true, otherwise, return: outs = list(model_score)
-    if(newY){
-      outs = validation(predicted = scores, outcomeType = "continuous", trueY = newdata[,Y], outfile = outfile)
+  # Extract stored encoding information
+  factor_info <- attr(model, "factor_info")
+  stored_formula <- attr(model, "formula")
+  stored_feature_names <- attr(model, "feature_names")
+  
+  # Backward compatibility
+  if (is.null(stored_feature_names)) {
+    stored_feature_names <- model$feature_names
+    if (is.null(stored_feature_names)) {
+      stored_feature_names <- xgbtrainingObj$feature_names
+    }
+  }
+  
+  if (is.null(stored_feature_names)) {
+    stop("Feature names not found in model object")
+  }
+  
+  # Create the matrix
+  test_matrix <- tryCatch({
+    create_consistent_matrix(newdata, stored_formula, factor_info, stored_feature_names)
+  }, error = function(e) {
+    # Fallback: try with feature names only
+    warning("Using fallback method for matrix creation: ", e$message)
+    formula_fallback <- as.formula(paste("~", paste(stored_feature_names, collapse = " + ")))
+    test_matrix_fallback <- model.matrix(formula_fallback, data = newdata)[, -1, drop = FALSE]
+    matrix(as.numeric(test_matrix_fallback), nrow = nrow(test_matrix_fallback))
+  })
+  
+  # ========== PREDICT ==========
+  test_dmatrix <- xgboost::xgb.DMatrix(data = test_matrix)
+  scores <- stats::predict(model, test_dmatrix)
+  names(scores) <- rownames(newdata)
+  
+  # ========== VALIDATION IF REQUESTED ==========
+  if (newY) {
+    # Extract outcome information
+    Y <- xgbtrainingObj$Y
+    time <- xgbtrainingObj$time
+    event <- xgbtrainingObj$event
+    baseHz <- xgbtrainingObj$h0
+    
+    # Validate we have the required information
+    if (outcomeType %in% c("binary", "continuous") && is.null(Y)) {
+      warning("Y not found for validation, skipping validation")
+      newY <- FALSE
+    }
+    if (outcomeType == "time-to-event" && (is.null(time) || is.null(event))) {
+      warning("time and/or event not found for validation, skipping validation")
+      newY <- FALSE
     }
     
-  }else if(outcomeType == "binary"){
-    if(newY){
-      outs = validation(predicted = scores, outcomeType = "binary", trueY = newdata[,Y], outfile = outfile)
-    }
-  }else if(outcomeType == "time-to-event"){
-    if(newY){
-      outs = validation(predicted = scores, outcomeType = "time-to-event", time = newdata[,time], trueEvent = newdata[,event], 
-                        baseHz = baseHz, outfile = outfile)
+    if (newY) {
+      if (outcomeType == "continuous") {
+        outs <- validation(predicted = scores, outcomeType = "continuous", 
+                           trueY = newdata[[Y]], outfile = outfile)
+      } else if (outcomeType == "binary") {
+        outs <- validation(predicted = scores, outcomeType = "binary", 
+                           trueY = newdata[[Y]], outfile = outfile)
+      } else if (outcomeType == "time-to-event") {
+        outs <- validation(predicted = scores, outcomeType = "time-to-event", 
+                           time = newdata[[time]], trueEvent = newdata[[event]], 
+                           baseHz = baseHz, outfile = outfile)
+      }
+      return(outs)
     }
   }
-  return(outs) 
-
+  
+  # Return just scores if no validation requested
+  return(scores)
 }

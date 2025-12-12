@@ -22,9 +22,9 @@ XGBtraining_predict(
 }
 \value{
 A vector of predicted values is return. If an outcome variable is available for the new dataset, validation is performed.
-\item{predicted}{A vector of model prediction values. For continuous outcome, this is a vector of model scores; 
-for binary outcome, this is a vector representing the probability of the positive class;
-for time to event outcome, this is a vector of risk scores}
+        For continuous outcome, this is a vector of model scores. 
+        For binary outcome, this is a vector representing the probability of the positive class.
+        For time to event outcome, this is a vector of risk scores.
 }
 \description{
 This function predicts XGBoost model scores using an XGBtraining object and a new dataset. 

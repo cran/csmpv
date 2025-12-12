@@ -26,9 +26,19 @@
 #'               When 3 is chosen, samples are classified into low, middle, and high-risk groups.
 #' @param topN An integer indicating how many variables to select if LASSO_plus is chosen as the variable selection method.
 #' @param outfile A string for the output file, including the path if necessary but without a file type extension.
+#' @param nthread The number of parallel threads used to run XGBoost.
+#' @param gamma The minimum loss reduction required to make a further partition on a leaf node of the tree.
+#' @param max_depth The maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit.
+#' @param outfile A string for the output file, including the path if necessary but without the file type extension.
+#' @param eta The step size shrinkage used in the update to prevent overfitting.
 
 #' @import xgboost
 #' @import survival
+#' @importFrom stats .getXlevels
+#' @importFrom stats model.matrix
+#' @importFrom stats terms
+#' @importFrom stats model.frame
+#' 
 #' @author Aixiang Jiang
 #' @return A list is returned with the following seven items:
 #' \item{ranks}{Ranks from XGboost and Cox}
@@ -43,7 +53,7 @@
 #' @references 
 #'  Tianqi Chen and Carlos Guestrin (2016), "XGBoost: A Scalable Tree Boosting System", 22nd SIGKDD Conference on Knowledge Discovery and Data Mining, 2016, https://arxiv.org/abs/1603.02754
 #'  
-#'  Aoki T, Jiang A, Xu A et al.,(2023) Spatially Resolved Tumor Microenvironment Predicts Treatment Outcomes in Relapsed/Refractory Hodgkin Lymphoma. J Clin Oncol. 2023 Dec 19:JCO2301115. doi: 10.1200/JCO.23.01115. Epub ahead of print. PMID: 38113419.
+#'  Aoki T, Jiang A, Xu A et al.,(2023) Spatially Resolved Tumor Microenvironment Predicts Treatment Outcomes in Relapsed/Refractory Hodgkin Lymphoma. J Clin Oncol. 2023 Dec 19:JCO2301115. doi: 10.1200/JCO.23.01115.
 
 #' @examples
 #' # Load in data sets:
@@ -70,6 +80,7 @@
 XGpred = function(data = NULL, varsIn = NULL, selection = FALSE, 
                   vsMethod = c("LASSO2", "LASSO2plus", "LASSO_plus"),
                   time = NULL, event = NULL, nrounds = 5, probcut = 0.8,
+                  nthread = 2, gamma = 1, max_depth = 3, eta = 0.3,
                   nclass = c(2,3), topN = 10, outfile = "nameWithPath"){
   nclass = nclass[1]
   ## variable selection
@@ -112,20 +123,48 @@ XGpred = function(data = NULL, varsIn = NULL, selection = FALSE,
     }
   }
   
-  x.train = data[,c(varsIn, time, event)]
-  ### XGB
-  num_feature = dim(x.train)[2]
-  x.train.xgb = data.matrix(x.train)
-  dtrain = list(data=x.train.xgb[,c(1:(num_feature-2))],label=x.train.xgb[,(num_feature-1)]*(-(-1)^(as.numeric(x.train.xgb[,num_feature]))))	
-  Dtrain = xgboost::xgb.DMatrix(dtrain$data,label=dtrain$label)
-  modeln = xgboost::xgboost(
+  x.train <- data[, c(varsIn, time, event), drop = FALSE]
+  
+  # Create formula from biomarkers
+  formula <- as.formula(paste("~", paste(varsIn, collapse = " + ")))
+  
+  # Create model matrix - this properly handles factors
+  tdat <- model.matrix(formula, data = x.train)
+  
+  # Remove intercept (if present) and convert to matrix
+  tdat <- tdat[, -1, drop = FALSE]  # Remove intercept column
+  storage.mode(tdat) <- "double"
+  
+  # Store factor information for consistent prediction later
+  factor_info <- list(
+    xlevels = .getXlevels(terms(formula), x.train),
+    contrasts = attr(tdat, "contrasts")
+  )
+  
+  # Survival label: time for events, -time for censored
+  time_vals <- x.train[[time]]
+  event_vals <- x.train[[event]]
+  survival_label <- time_vals * (2 * as.numeric(event_vals) - 1)
+  
+  # Create DMatrix - CRAN-safe approach
+  # Option 1: Direct approach (usually works)
+  Dtrain <- xgboost::xgb.DMatrix(data = tdat, label = survival_label)
+
+
+  # Parameters for xgb.train()
+  params <- list(
     objective = "survival:cox",
+    nthread = nthread,
+    gamma = gamma,
+    max_depth = max_depth,
+    eta = eta
+  )
+  
+  modeln = xgboost::xgb.train(
+    params = params,
     data = Dtrain,
     nrounds = nrounds,
-    nthread = 2, ## this is not important for small data set
-    verbose = 2 
-    # If 0, xgboost will stay silent. If 1, xgboost will print information of performance. 
-    # If 2, xgboost will print information of both performance and construction progress information
+    verbose = 2
   )
   
   pn = stats::predict(modeln, Dtrain)  ## this is risk score: exp(linear prediction)

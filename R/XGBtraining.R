@@ -38,6 +38,11 @@
 #' @author Aixiang Jiang
 #' @import xgboost
 #' @import survival
+#' @importFrom stats .getXlevels
+#' @importFrom stats model.matrix
+#' @importFrom stats terms
+#' @importFrom stats model.frame
+#' 
 #' @references 
 #' Tianqi Chen and Carlos Guestrin, "XGBoost: A Scalable Tree Boosting System", 22nd SIGKDD Conference on Knowledge Discovery and Data Mining, 2016, https://arxiv.org/abs/1603.02754
 
@@ -64,97 +69,189 @@
 
 #' @export
 
-XGBtraining = function(data, biomks = NULL,outcomeType = c("binary","continuous","time-to-event"), Y =NULL, time=NULL, event=NULL, nrounds = 5,
+XGBtraining = function(data, biomks = NULL, outcomeType = c("binary", "continuous", "time-to-event"), 
+                       Y = NULL, time = NULL, event = NULL, nrounds = 5,
                        nthread = 2, gamma = 1, max_depth = 3, eta = 0.3, outfile = "nameWithPath") {
+  
   outcomeType = outcomeType[1]
   modeln = NA
-  
-  ## add one more on 20230705 for cox
   h0 = NULL ## cumulative baseline hazard table
   
-  if(outcomeType == "binary"){
-    x.train = data[,c(biomks, Y)]
-    ### XGB
-    num_feature = dim(x.train)[2]
-    x.train.xgb = data.matrix(x.train)
-    ## add as.matrix to deal with potential one variable situation
-    dtrain = list(data=as.matrix(x.train.xgb[,c(1:(num_feature-1))]),label=x.train.xgb[,num_feature])	
-    Dtrain = xgboost::xgb.DMatrix(dtrain$data,label=dtrain$label)
-    modeln = xgboost::xgboost(
+  # Input validation
+  if (is.null(biomks) || length(biomks) == 0) {
+    stop("biomks cannot be NULL or empty")
+  }
+
+  if (outcomeType == "binary") {
+    # Validation
+    if (is.null(Y)) stop("Y (outcome) must be specified for binary outcome")
+    if (!Y %in% colnames(data)) stop(paste("Y column", Y, "not found in data"))
+    
+    # Prepare data
+    x.train <- data[, c(biomks, Y), drop = FALSE]
+    
+    # Create model matrix
+    mm_result <- create_model_matrix(x.train, biomks)
+    tdat <- mm_result$matrix
+    
+    # Extract outcome
+    outcome_vals <- x.train[[Y]]
+    if (!all(outcome_vals %in% c(0, 1))) {
+      warning("Binary outcome should be 0/1. Converting automatically.")
+      outcome_vals <- as.numeric(as.factor(outcome_vals)) - 1
+    }
+    
+    # Create DMatrix
+    Dtrain <- xgboost::xgb.DMatrix(data = tdat, label = outcome_vals)
+    
+    # Model parameters
+    params <- list(
       objective = "binary:logistic",
-      data = Dtrain,
-      nrounds = nrounds, # max number of boosting iterations
-      nthread = nthread, ## Number of parallel threads used to run XGBoost, this is not important for small data set
-      verbose = 2, 
-      # If 0, xgboost will stay silent. If 1, xgboost will print information of performance. 
-      # If 2, xgboost will print information of both performance and construction progress information
-      gamma = gamma, # Minimum loss reduction required to make a further partition on a leaf node of the tree
-      max_depth = max_depth, # Maximum depth of a tree, default is 6
-      eta = eta # this is default, Step size shrinkage used in update to prevents overfitting
+      nthread = nthread,
+      gamma = gamma,
+      max_depth = max_depth,
+      eta = eta
     )
-  }else if(outcomeType == "continuous"){
-    x.train = data[,c(biomks, Y)]
-    ### XGB
-    num_feature = dim(x.train)[2]
-    x.train.xgb = data.matrix(x.train)
-    dtrain = list(data=x.train.xgb[,c(1:(num_feature-1))],label=x.train.xgb[,num_feature])	
-    Dtrain = xgboost::xgb.DMatrix(dtrain$data,label=dtrain$label)
-    modeln = xgboost::xgboost(
+    
+    # Train model
+    modeln <- xgboost::xgb.train(
+      params = params,
+      data = Dtrain,
+      nrounds = nrounds,
+      verbose = 2
+    )
+    
+    modeln <- structure(modeln, class = c("xgb.Booster", class(modeln)))
+    attr(modeln, "factor_info") <- mm_result$factor_info
+    attr(modeln, "feature_names") <- colnames(tdat)
+    attr(modeln, "formula") <- mm_result$formula
+
+  } else if (outcomeType == "continuous") {
+    # Validation
+    if (is.null(Y)) stop("Y (outcome) must be specified for continuous outcome")
+    if (!Y %in% colnames(data)) stop(paste("Y column", Y, "not found in data"))
+    
+    # Prepare data
+    x.train <- data[, c(biomks, Y), drop = FALSE]
+    
+    # Create model matrix
+    mm_result <- create_model_matrix(x.train, biomks)
+    tdat <- mm_result$matrix
+    
+    # Extract outcome
+    outcome_vals <- as.numeric(x.train[[Y]])
+    
+    # Create DMatrix
+    Dtrain <- xgboost::xgb.DMatrix(data = tdat, label = outcome_vals)
+    
+    # Model parameters
+    params <- list(
       objective = "reg:squarederror",
-      data = Dtrain,
-      nrounds = nrounds, # max number of boosting iterations
-      nthread = nthread, ## Number of parallel threads used to run XGBoost, this is not important for small data set
-      verbose = 2, 
-      # If 0, xgboost will stay silent. If 1, xgboost will print information of performance. 
-      # If 2, xgboost will print information of both performance and construction progress information
-      gamma = gamma, # Minimum loss reduction required to make a further partition on a leaf node of the tree
-      max_depth = max_depth, # Maximum depth of a tree, default is 6
-      eta = eta # this is default, Step size shrinkage used in update to prevents overfitting
+      nthread = nthread,
+      gamma = gamma,
+      max_depth = max_depth,
+      eta = eta
     )
-  }else if(outcomeType == "time-to-event"){
-    x.train = data[,c(biomks, time, event)]
-    ### XGB
-    num_feature = dim(x.train)[2]
-    x.train.xgb = data.matrix(x.train)
-    ## essential, y = -time if event = 0, and y = time if event = 1
-    dtrain = list(data=x.train.xgb[,c(1:(num_feature-2))],label=x.train.xgb[,(num_feature-1)]*(-(-1)^(as.numeric(x.train.xgb[,num_feature]))))	
-    Dtrain = xgboost::xgb.DMatrix(dtrain$data,label=dtrain$label)
-    modeln = xgboost::xgboost(
+    
+    # Train model
+    modeln <- xgboost::xgb.train(
+      params = params,
+      data = Dtrain,
+      nrounds = nrounds,
+      verbose = 2
+    )
+    
+    modeln <- structure(modeln, class = c("xgb.Booster", class(modeln)))
+    attr(modeln, "factor_info") <- mm_result$factor_info
+    attr(modeln, "feature_names") <- colnames(tdat)
+    attr(modeln, "formula") <- mm_result$formula
+    
+  } else if (outcomeType == "time-to-event") {
+    # Validation
+    if (is.null(time) || is.null(event)) {
+      stop("Both time and event must be specified for time-to-event outcome")
+    }
+    if (!all(c(time, event) %in% colnames(data))) {
+      missing <- setdiff(c(time, event), colnames(data))
+      stop(paste("Missing columns:", paste(missing, collapse = ", ")))
+    }
+    
+    # Prepare data
+    x.train <- data[, c(biomks, time, event), drop = FALSE]
+    
+    # Create model matrix
+    mm_result <- create_model_matrix(x.train, biomks)
+    tdat <- mm_result$matrix
+    
+    # Extract time and event
+    time_vals <- as.numeric(x.train[[time]])
+    event_vals <- as.numeric(x.train[[event]])
+    
+    # Validate event values
+    if (!all(event_vals %in% c(0, 1))) {
+      stop("Event column must contain only 0 (censored) and 1 (event) values")
+    }
+    
+    # Create survival label: y = time for events, y = -time for censored
+    survival_label <- time_vals * (2 * event_vals - 1)
+    
+    # Create DMatrix
+    Dtrain <- xgboost::xgb.DMatrix(data = tdat, label = survival_label)
+    
+    # Model parameters
+    params <- list(
       objective = "survival:cox",
-      data = Dtrain,
-      nrounds = nrounds, # max number of boosting iterations
-      nthread = nthread, ## Number of parallel threads used to run XGBoost, this is not important for small data set
-      verbose = 2, 
-      # If 0, xgboost will stay silent. If 1, xgboost will print information of performance. 
-      # If 2, xgboost will print information of both performance and construction progress information
-      gamma = gamma, # Minimum loss reduction required to make a further partition on a leaf node of the tree
-      max_depth = max_depth, # Maximum depth of a tree, default is 6
-      eta = eta # this is default, Step size shrinkage used in update to prevents overfitting
+      nthread = nthread,
+      gamma = gamma,
+      max_depth = max_depth,
+      eta = eta
     )
-    coxfit = survival::coxph(Surv(data[,time], data[, event]) ~ 1)
-    h0 = basehaz(coxfit)
-  }else{
-    stop("Please select the correct outcome type")
+    
+    # Train model
+    modeln <- xgboost::xgb.train(
+      params = params,
+      data = Dtrain,
+      nrounds = nrounds,
+      verbose = 2
+    )
+    
+    modeln <- structure(modeln, class = c("xgb.Booster", class(modeln)))
+    attr(modeln, "factor_info") <- mm_result$factor_info
+    attr(modeln, "feature_names") <- colnames(tdat)
+    attr(modeln, "formula") <- mm_result$formula
+    
+    # Calculate baseline hazard
+    coxfit <- survival::coxph(survival::Surv(data[[time]], data[[event]]) ~ 1)
+    h0 <- survival::basehaz(coxfit)
+    
+  } else {
+    stop("Please select the correct outcome type: binary, continuous, or time-to-event")
   }
   
-  ## write out the internal validation results for each boosting iteration
-  sink(paste0(outfile,"_Internal_validation.txt"))
-  print(modeln$evaluation_log)
-  sink()
+  ## Write out the internal validation results for each boosting iteration
+  if (!is.null(outfile) && outfile != "") {
+    sink(paste0(outfile, "_Internal_validation.txt"))
+    print(modeln$evaluation_log)
+    sink()
+  }
   
+  ## Predict on training data
+  pn <- stats::predict(modeln, Dtrain)
+  names(pn) <- rownames(data)
   
-  pn = stats::predict(modeln, Dtrain)
-  names(pn) = rownames(data)
+  ## Prepare output list
+  outs <- list(
+    XGBoost_model = modeln,
+    XGBoost_score = pn,
+    Y = Y,
+    outcomeType = outcomeType
+  )
   
-  #outs = list(modeln, pn, data[,Y], outcomeType)
-  outs = list(modeln, pn, Y, outcomeType)
-  names(outs) = c("XGBoost_model", "XGBoost_score", "Y", "outcomeType")
-  
-  ## add more on 20230705 and modify on 20230711
-  if(!is.null(h0)){
-    #outs = list(modeln, pn, h0, data[,time], data[,event], outcomeType)
-    outs = list(modeln, pn, h0, time, event, outcomeType)
-    names(outs) = c("XGBoost_model", "XGBoost_score", "h0", "time", "event", "outcomeType")
+  ## Add survival-specific outputs
+  if (outcomeType == "time-to-event") {
+    outs$h0 <- h0
+    outs$time <- time
+    outs$event <- event
   }
   
   return(outs)

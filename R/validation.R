@@ -47,12 +47,10 @@
 #' # Here, we use XGBoost model with binary outcome as an example:
 #' bxfit = XGBtraining(data = tdat, biomks = Xvars, Y = "DZsig",
 #'                     outfile = paste0(temp_dir, "/binary_XGBoost"))
-#' testdat = vdat[,bxfit$XGBoost_model$feature_names]
-#' test = xgboost::xgb.DMatrix(data.matrix(testdat))
-#' scores = stats::predict(bxfit$XGBoost_model, test) 
-#' names(scores) = rownames(vdat)
+#' pbxfit = XGBtraining_predict(bxfit, newdata = vdat,
+#'                     outfile = paste0(temp_dir, "/pred_binary_XGBoost"))
 #' Y = bxfit$Y
-#' outs = validation(predicted = scores, outcomeType = "binary", trueY = vdat[,Y],
+#' outs = validation(predicted = pbxfit, outcomeType = "binary", trueY = vdat[,Y],
 #'                   outfile = paste0(temp_dir, "/binary_XGBoost_validate")) 
 #' # You might save the files to the directory you want.
 #' 

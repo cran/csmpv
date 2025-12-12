@@ -9,11 +9,11 @@
 #' @importFrom stats as.formula
 #' @noRd
 
-coxTimeToEvent = function(datain, time, event, Xin, outfile = "nameWithPath"){
+coxTimeToEvent = function(datain, time, event, Xin, outfile = "nameWithPath", timeUnits = "years"){
   ## datain is a data frame
   ## the outcome type is time to event, so, there are two outcome variable names: time and event
   ## Xin is one x variable, or a group of x variables
-  
+
   survY = paste0("survival::Surv(", time,",", event, ")")
   survX = paste(Xin, collapse=" + ")
   
@@ -31,7 +31,8 @@ coxTimeToEvent = function(datain, time, event, Xin, outfile = "nameWithPath"){
         palette = c("#2E9FDF", "#E7B800", "purple", "Green"),
         legend.title = "",
         risk.table.y.text.col = TRUE,
-        risk.table.height = 0.3
+        risk.table.height = 0.3,
+        xlab = paste0("Time (", timeUnits,")")
       ) 
       pdf(paste(outfile, Xin, "KM.pdf", sep = "_"))
       print(newplot)

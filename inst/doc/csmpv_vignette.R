@@ -1,24 +1,24 @@
 ## ----setup, include=FALSE-----------------------------------------------------
-knitr::opts_chunk$set(fig.width=6, fig.height=4.5) # Set the width and height
+knitr::opts_chunk$set(fig.width=8, fig.height=7) # Set the width and height
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  install.packages("csmpv")
+# install.packages("csmpv")
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  # Install devtools package if not already installed
-#  options(repos = c(CRAN = "https://cloud.r-project.org"))
-#  install.packages("devtools")
-#  
-#  # Install csmpv package from GitHub
-#  devtools::install_github("ajiangsfu/csmpv",force = TRUE)
-#  # Using force = TRUE will ensure the installation, overriding any existing versions
+# # Install devtools package if not already installed
+# options(repos = c(CRAN = "https://cloud.r-project.org"))
+# install.packages("devtools")
+# 
+# # Install csmpv package from GitHub
+# devtools::install_github("ajiangsfu/csmpv",force = TRUE)
+# # Using force = TRUE will ensure the installation, overriding any existing versions
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  # Install remotes package if not already installed
-#  install.packages("remotes")
-#  # Install csmpv package from GitHub
-#  remotes::install_github("ajiangsfu/csmpv",force = TRUE)
-#  # Using force = TRUE will ensure the installation, overriding any existing versions
+# # Install remotes package if not already installed
+# install.packages("remotes")
+# # Install csmpv package from GitHub
+# remotes::install_github("ajiangsfu/csmpv",force = TRUE)
+# # Using force = TRUE will ensure the installation, overriding any existing versions
 
 ## -----------------------------------------------------------------------------
 library(csmpv)
@@ -37,6 +37,9 @@ Xvars = c("B.Symptoms","MYC.IHC","BCL2.IHC", "CD10.IHC","BCL6.IHC",
 AgeXvars = setdiff(Xvars, "AgeOver60")
 
 ## -----------------------------------------------------------------------------
+DZXvars = setdiff(Xvars, "HANS_GCB")
+
+## -----------------------------------------------------------------------------
 set.seed(12345)
 
 ## -----------------------------------------------------------------------------
@@ -47,7 +50,7 @@ knitr::opts_knit$set(root.dir = temp_dir)
 options(warn = -1) 
 
 ## ----results = 'hide',message=FALSE, warnings=FALSE---------------------------
-bconfirm = confirmVars(data = tdat, biomks = Xvars, Y = "DZsig",
+bconfirm = confirmVars(data = tdat, biomks = DZXvars, Y = "DZsig",
                        outfile = "confirmBinary")
 
 ## -----------------------------------------------------------------------------
@@ -74,7 +77,7 @@ print(tconfirm$fit)
 tconfirm$allplot[[2]]
 
 ## -----------------------------------------------------------------------------
-bl = LASSO2(data = tdat, biomks = Xvars, Y = "DZsig",
+bl = LASSO2(data = tdat, biomks = DZXvars, Y = "DZsig",
             outfile = "binaryLASSO2")
 
 ## -----------------------------------------------------------------------------
@@ -98,7 +101,7 @@ tl = LASSO2(data = tdat, biomks = Xvars,
 tl$coefs
 
 ## -----------------------------------------------------------------------------
-b2fit = LASSO2plus(data = tdat, biomks = Xvars, Y = "DZsig",
+b2fit = LASSO2plus(data = tdat, biomks = DZXvars, Y = "DZsig",
         outfile = "binaryLASSO2plus")
 b2fit$fit$coefficients
 
@@ -116,7 +119,7 @@ t2fit = LASSO2plus(data = tdat, biomks = Xvars,
 t2fit$fit$coefficients
 
 ## -----------------------------------------------------------------------------
-bfit = LASSO_plus(data = tdat, biomks = Xvars, Y = "DZsig",
+bfit = LASSO_plus(data = tdat, biomks = DZXvars, Y = "DZsig",
                   outfile = "binaryLASSO_plus", topN = 5)
 bfit$fit$coefficients
 
@@ -134,7 +137,7 @@ tfit = LASSO_plus(data = tdat, biomks = Xvars,
 tfit$fit$coefficients
 
 ## ----results = 'hide',message=FALSE, warnings=FALSE---------------------------
-blr = LASSO2_reg(data = tdat, biomks = Xvars, Y = "DZsig",
+blr = LASSO2_reg(data = tdat, biomks = DZXvars, Y = "DZsig",
                  outfile = "binaryLASSO2_reg")
 
 ## -----------------------------------------------------------------------------
@@ -158,7 +161,7 @@ tlr = LASSO2_reg(data = tdat, biomks = Xvars,
 tlr$fit$coefficients
 
 ## -----------------------------------------------------------------------------
-bxfit = XGBtraining(data = tdat, biomks = Xvars, Y = "DZsig",
+bxfit = XGBtraining(data = tdat, biomks = DZXvars, Y = "DZsig",
                     outfile = "binary_XGBoost")
 head(bxfit$XGBoost_score)
 
@@ -176,7 +179,7 @@ txfit = XGBtraining(data = tdat, biomks = Xvars,
 head(txfit$XGBoost_score)
 
 ## -----------------------------------------------------------------------------
-blxfit = LASSO2_XGBtraining(data = tdat, biomks = Xvars, Y = "DZsig",
+blxfit = LASSO2_XGBtraining(data = tdat, biomks = DZXvars, Y = "DZsig",
                             outfile = "binary_LASSO2_XGBoost")
 head(blxfit$XGBoost_score)
 
@@ -194,7 +197,7 @@ tlxfit = LASSO2_XGBtraining(data = tdat, biomks = Xvars,
 head(tlxfit$XGBoost_score)
 
 ## ----warning=FALSE------------------------------------------------------------
-blpxfit = LASSO_plus_XGBtraining(data = tdat, biomks = Xvars, Y = "DZsig",
+blpxfit = LASSO_plus_XGBtraining(data = tdat, biomks = DZXvars, Y = "DZsig",
                                  topN = 5,outfile = "binary_LASSO_plus_XGBoost")
 head(blpxfit$XGBoost_score)
 
@@ -212,7 +215,7 @@ tlpxfit = LASSO_plus_XGBtraining(data = tdat, biomks = Xvars,
 head(tlpxfit$XGBoost_score)
 
 ## ----warning=FALSE------------------------------------------------------------
-bl2xfit = LASSO2plus_XGBtraining(data = tdat, biomks = Xvars, Y = "DZsig",
+bl2xfit = LASSO2plus_XGBtraining(data = tdat, biomks = DZXvars, Y = "DZsig",
                                  outfile = "binary_LASSO2plus_XGBoost")
 head(bl2xfit$XGBoost_score)
 
@@ -425,16 +428,16 @@ vtl2xfit = XGBtraining_predict(tl2xfit, newdata = vdat, newY = TRUE,
                                outfile = "valid_L2XGBoost_time_to_event")
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  modelout = csmpvModelling(tdat = tdat, vdat = vdat,
-#                            Ybinary = "DZsig", varsBinary = Xvars,
-#                            Ycont = "Age", varsCont = AgeXvars,
-#                            time = "FFP..Years.", event = "Code.FFP",
-#                            varsSurvival = Xvars,
-#                            outfileName= "all_in_one")
+# modelout = csmpvModelling(tdat = tdat, vdat = vdat,
+#                           Ybinary = "DZsig", varsBinary = DZXvars,
+#                           Ycont = "Age", varsCont = AgeXvars,
+#                           time = "FFP..Years.", event = "Code.FFP",
+#                           varsSurvival = Xvars,
+#                           outfileName= "all_in_one")
 
 ## ----warning=FALSE------------------------------------------------------------
 DZlassoreg = csmpvModelling(tdat = tdat, vdat = vdat,
-                            Ybinary = "DZsig", varsBinary = Xvars,
+                            Ybinary = "DZsig", varsBinary = DZXvars,
                             methods = "LASSO2_reg",
                             outfileName= "just_one")
 

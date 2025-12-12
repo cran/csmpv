@@ -2,10 +2,14 @@ Package: csmpv
 Type: Package
 Title: Biomarker Confirmation, Selection, Modelling, Prediction, and
         Validation
-Version: 1.0.3
-Author: Aixiang Jiang [aut, cre, cph] (<https://orcid.org/0000-0002-6153-7595>)
+Version: 1.0.5
+Authors@R: person(given = "Aixiang",
+                    family = "Jiang",
+                    role = c("aut", "cre", "cph"),
+                    email = "aijiang@bccrc.ca",
+                    comment = c(ORCID = "0000-0002-6153-7595"))
 Maintainer: Aixiang Jiang <aijiang@bccrc.ca>
-Depends: R (>= 4.2.0), stats
+Depends: R (>= 4.4.0), stats
 Imports: survival, glmnet, Hmisc, rms, forestmodel, ggplot2, ggpubr,
         survminer, xgboost, scales, Matrix
 Suggests: knitr, rmarkdown, devtools
@@ -29,13 +33,15 @@ Description:
    - Simon et al. (2011) <doi:10.18637/jss.v039.i05>,
    - Harrell (2023) <https://CRAN.R-project.org/package=rms>,
    - Harrell (2023) <https://CRAN.R-project.org/package=Hmisc>,
-   - Chen and Guestrin (2016) <arXiv:1603.02754>,
+   - Chen and Guestrin (2016) <doi:10.48550/arXiv.1603.02754>,
    - Aoki et al. (2023) <doi:10.1200/JCO.23.01115>.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 NeedsCompilation: no
-Packaged: 2024-03-01 17:04:24 UTC; aijiang
+Packaged: 2025-12-11 23:56:46 UTC; jiang
+Author: Aixiang Jiang [aut, cre, cph] (ORCID:
+    <https://orcid.org/0000-0002-6153-7595>)
 Repository: CRAN
-Date/Publication: 2024-03-01 18:12:44 UTC
+Date/Publication: 2025-12-12 00:20:02 UTC

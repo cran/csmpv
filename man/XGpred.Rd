@@ -13,6 +13,10 @@ XGpred(
   event = NULL,
   nrounds = 5,
   probcut = 0.8,
+  nthread = 2,
+  gamma = 1,
+  max_depth = 3,
+  eta = 0.3,
   nclass = c(2, 3),
   topN = 10,
   outfile = "nameWithPath"
@@ -36,12 +40,20 @@ are "LASSO2plus" and "LASSO_plus."}
 
 \item{probcut}{Probability cutoff for risk group classification. Default is set to 0.8.}
 
+\item{nthread}{The number of parallel threads used to run XGBoost.}
+
+\item{gamma}{The minimum loss reduction required to make a further partition on a leaf node of the tree.}
+
+\item{max_depth}{The maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit.}
+
+\item{eta}{The step size shrinkage used in the update to prevent overfitting.}
+
 \item{nclass}{Number of risk groups. By default, it is 2; any samples not classified into high-risk groups are classified into the low-risk group. 
 When 3 is chosen, samples are classified into low, middle, and high-risk groups.}
 
 \item{topN}{An integer indicating how many variables to select if LASSO_plus is chosen as the variable selection method.}
 
-\item{outfile}{A string for the output file, including the path if necessary but without a file type extension.}
+\item{outfile}{A string for the output file, including the path if necessary but without the file type extension.}
 }
 \value{
 A list is returned with the following seven items:
@@ -89,7 +101,7 @@ unlink(temp_dir)
 \references{
 Tianqi Chen and Carlos Guestrin (2016), "XGBoost: A Scalable Tree Boosting System", 22nd SIGKDD Conference on Knowledge Discovery and Data Mining, 2016, https://arxiv.org/abs/1603.02754
  
- Aoki T, Jiang A, Xu A et al.,(2023) Spatially Resolved Tumor Microenvironment Predicts Treatment Outcomes in Relapsed/Refractory Hodgkin Lymphoma. J Clin Oncol. 2023 Dec 19:JCO2301115. doi: 10.1200/JCO.23.01115. Epub ahead of print. PMID: 38113419.
+ Aoki T, Jiang A, Xu A et al.,(2023) Spatially Resolved Tumor Microenvironment Predicts Treatment Outcomes in Relapsed/Refractory Hodgkin Lymphoma. J Clin Oncol. 2023 Dec 19:JCO2301115. doi: 10.1200/JCO.23.01115.
 }
 \author{
 Aixiang Jiang

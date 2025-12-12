@@ -16,8 +16,8 @@
 #' @param Y The outcome variable name when the outcome type is either "binary" or "continuous".
 #' @param time The time variable name when the outcome type is "time-to-event".
 #' @param event The event variable name when the outcome type is "time-to-event".
-#' @param outfile A string representing the output file, including the path if necessary, but without the file type extension
-#'
+#' @param outfile A string representing the output file, including the path if necessary, but without the file type extension.
+#' @param timeUnits A character vector specifying the units in which time is measured for the survival data. Default is "years".
 #' @return A list containing:
 #' \item{fit}{A model with selected variables for the given outcome variable.}
 #' \item{allplot}{A list of plots generated during the confirmation/validation process.}
@@ -55,7 +55,9 @@
 #' @export
 
 confirmVars = function(data = NULL, standardization = FALSE, columnWise = TRUE, biomks = NULL,  
-                       outcomeType = c("binary","continuous","time-to-event"), Y = NULL, time = NULL, event = NULL, outfile = "nameWithPath"){
+                       outcomeType = c("binary","continuous","time-to-event"), 
+                       Y = NULL, time = NULL, event = NULL, outfile = "nameWithPath",
+                       timeUnits = "years"){
   if(is.null(data)){
     stop("Please input a data set")
   }
@@ -86,7 +88,7 @@ confirmVars = function(data = NULL, standardization = FALSE, columnWise = TRUE, 
 
   }else if(outcomeType == "time-to-event"){
     aout = lapply(biomks, function(aX){
-      res = coxTimeToEvent(data, time, event, aX, outfile)
+      res = coxTimeToEvent(data, time, event, aX, outfile, timeUnits = timeUnits)
     })
   
     alls = coxTimeToEvent(data, time, event, biomks, outfile)

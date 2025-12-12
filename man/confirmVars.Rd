@@ -13,7 +13,8 @@ confirmVars(
   Y = NULL,
   time = NULL,
   event = NULL,
-  outfile = "nameWithPath"
+  outfile = "nameWithPath",
+  timeUnits = "years"
 )
 }
 \arguments{
@@ -33,7 +34,9 @@ confirmVars(
 
 \item{event}{The event variable name when the outcome type is "time-to-event".}
 
-\item{outfile}{A string representing the output file, including the path if necessary, but without the file type extension}
+\item{outfile}{A string representing the output file, including the path if necessary, but without the file type extension.}
+
+\item{timeUnits}{A character vector specifying the units in which time is measured for the survival data. Default is "years".}
 }
 \value{
 A list containing:

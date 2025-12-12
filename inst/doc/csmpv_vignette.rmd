@@ -12,7 +12,7 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(fig.width=6, fig.height=4.5) # Set the width and height
+knitr::opts_chunk$set(fig.width=8, fig.height=7) # Set the width and height
 ```
 
 The csmpv R package provides an extensive set of functions that encompass biomarker confirmation, variable selection, modeling, predictive analysis, and validation. It can handle diverse outcome variable types, including binary, continuous, and time-to-event data. Its key objectives include:
@@ -91,7 +91,7 @@ To illustrate different types of outcome variables, we'll define examples for bi
 - Continuous: Age
 - Time-to-event: FFP (freedom from progression)
 
-For binary and time-to-event variables, independent variables are defined as:
+For the time-to-event outcome variable, independent variables are defined as:
 
 ```{r}
 Xvars = c("B.Symptoms","MYC.IHC","BCL2.IHC", "CD10.IHC","BCL6.IHC",
@@ -99,11 +99,18 @@ Xvars = c("B.Symptoms","MYC.IHC","BCL2.IHC", "CD10.IHC","BCL6.IHC",
  "Extranodal1","Bulk10cm","HANS_GCB", "DTI")
 ```
 
-For the continuous variable, the corresponding independent variables align with those above, excluding AgeOver60 due to its correlation with the outcome variable Age:
+For the continuous outcome variable, the corresponding independent variables align with those above, excluding AgeOver60 due to its correlation with the outcome variable Age:
 
 ```{r}
 AgeXvars = setdiff(Xvars, "AgeOver60")
 ```
+
+For the binary variable, the corresponding independent variables align with Xvars, excluding 'HANS_GCB' since DZsig classification is typically conducted within Germinal Center B-Cell (GCB) samples. In fact, no non-GCB sample is DZsig positive in our training dataset.
+
+```{r}
+DZXvars = setdiff(Xvars, "HANS_GCB")
+```
+
 
 To enhance reproducibility and minimize variability from random number generation, we established and set a specific random seed:
 ```{r}
@@ -129,7 +136,7 @@ options(warn = -1)
 ```
 
 ``` {r, results = 'hide',message=FALSE, warnings=FALSE}
-bconfirm = confirmVars(data = tdat, biomks = Xvars, Y = "DZsig",
+bconfirm = confirmVars(data = tdat, biomks = DZXvars, Y = "DZsig",
                        outfile = "confirmBinary")
 ```
 The confirmVars function acts as a wrapper, invoking various functions to perform regression analysis based on different outcome types. By default, the outcome type is binary, requiring no explicit specification when handling binary outcomes.
@@ -206,7 +213,7 @@ To address this potential issue, when LASSO2 identifies only one or no variables
 For binary outcomes, no additional specification is needed for outcomeType, as it is the default value.
 
 ``` {r}
-bl = LASSO2(data = tdat, biomks = Xvars, Y = "DZsig",
+bl = LASSO2(data = tdat, biomks = DZXvars, Y = "DZsig",
             outfile = "binaryLASSO2")
 ```
 One figure and one text file are saved locally. 
@@ -265,7 +272,7 @@ All parameter settings for LASSO2plus are the same as for LASSO2.
 For binary outcomes, no additional specification is needed for outcomeType, as it is the default value.
 
 ``` {r}
-b2fit = LASSO2plus(data = tdat, biomks = Xvars, Y = "DZsig",
+b2fit = LASSO2plus(data = tdat, biomks = DZXvars, Y = "DZsig",
         outfile = "binaryLASSO2plus")
 b2fit$fit$coefficients
 ```
@@ -313,7 +320,7 @@ Setting the topN parameter to 5 is intended to incorporate the top 5 variables i
 For binary outcomes, outcome type specification is unnecessary, as it defaults to this type.
 
 ``` {r}
-bfit = LASSO_plus(data = tdat, biomks = Xvars, Y = "DZsig",
+bfit = LASSO_plus(data = tdat, biomks = DZXvars, Y = "DZsig",
                   outfile = "binaryLASSO_plus", topN = 5)
 bfit$fit$coefficients
 ```
@@ -372,7 +379,7 @@ All parameter settings are the same as for LASSO2.
 #### Binary outcome
 
 ```{r, results = 'hide',message=FALSE, warnings=FALSE}
-blr = LASSO2_reg(data = tdat, biomks = Xvars, Y = "DZsig",
+blr = LASSO2_reg(data = tdat, biomks = DZXvars, Y = "DZsig",
                  outfile = "binaryLASSO2_reg")
 ```
 
@@ -419,7 +426,7 @@ XGBoost is a powerful machine learning algorithm recognized for its boosting cap
 #### Binary outcome
 
 ```{r}
-bxfit = XGBtraining(data = tdat, biomks = Xvars, Y = "DZsig",
+bxfit = XGBtraining(data = tdat, biomks = DZXvars, Y = "DZsig",
                     outfile = "binary_XGBoost")
 head(bxfit$XGBoost_score)
 ```
@@ -482,7 +489,7 @@ Combine LASSO2 variable selection with XGBoost modeling using the LASSO2_XGBtrai
 #### Binary outcome
 
 ```{r}
-blxfit = LASSO2_XGBtraining(data = tdat, biomks = Xvars, Y = "DZsig",
+blxfit = LASSO2_XGBtraining(data = tdat, biomks = DZXvars, Y = "DZsig",
                             outfile = "binary_LASSO2_XGBoost")
 head(blxfit$XGBoost_score)
 ```
@@ -514,7 +521,7 @@ The format of the returned objects are identical to those of the XGBtraining fun
 #### Binary outcome
 
 ```{r, warning=FALSE}
-blpxfit = LASSO_plus_XGBtraining(data = tdat, biomks = Xvars, Y = "DZsig",
+blpxfit = LASSO_plus_XGBtraining(data = tdat, biomks = DZXvars, Y = "DZsig",
                                  topN = 5,outfile = "binary_LASSO_plus_XGBoost")
 head(blpxfit$XGBoost_score)
 ```
@@ -549,7 +556,7 @@ The format of the returned objects mirror those of the XGBtraining function, whi
 
 #### Binary outcome
 ```{r, warning=FALSE}
-bl2xfit = LASSO2plus_XGBtraining(data = tdat, biomks = Xvars, Y = "DZsig",
+bl2xfit = LASSO2plus_XGBtraining(data = tdat, biomks = DZXvars, Y = "DZsig",
                                  outfile = "binary_LASSO2plus_XGBoost")
 head(bl2xfit$XGBoost_score)
 ```
@@ -1020,7 +1027,7 @@ If you find it challenging to call various functions separately, the all-in-one 
 
 ```{r, eval = FALSE}
 modelout = csmpvModelling(tdat = tdat, vdat = vdat,
-                          Ybinary = "DZsig", varsBinary = Xvars,
+                          Ybinary = "DZsig", varsBinary = DZXvars,
                           Ycont = "Age", varsCont = AgeXvars,
                           time = "FFP..Years.", event = "Code.FFP",
                           varsSurvival = Xvars,
@@ -1033,7 +1040,7 @@ Certainly, we can use this all-in-one function to work on one outcome variable a
 
 ```{r, warning=FALSE}
 DZlassoreg = csmpvModelling(tdat = tdat, vdat = vdat,
-                            Ybinary = "DZsig", varsBinary = Xvars,
+                            Ybinary = "DZsig", varsBinary = DZXvars,
                             methods = "LASSO2_reg",
                             outfileName= "just_one")
 ```
