@@ -14,7 +14,6 @@
 #'
 #' All results, from the model itself to internal validation metrics and predictions, are conveniently stored locally for easy access and further analysis.
 
-#' @import rms
 #' @importFrom stats anova
 #' @importFrom utils write.csv
 #' @importFrom grDevices dev.off
@@ -136,14 +135,14 @@ rms_model = function(afit, data = NULL, newdata = NULL, newY = FALSE, u = 2, out
       #     for survival probability estimation
       
       ## without newY
-      ss = survest(newfit,newdata=newdata,times=u)$surv
+      ss = rms::survest(newfit,newdata=newdata,times=u)$surv
       survs = Surv(time = newdata[,tmpt], event = newdata[,tmpe])
       cindex = rcorr.cens(x=ss, S = survs)
       write.csv(cindex, paste0(outfile, "_newData_Cindex.csv"))
       write.csv(ss, paste0(outfile,"SurvProb_at_year_",u ,"_newData.csv"))
       
       if(newY){
-        vout = val.surv(newfit,newdata, S = survs, est.surv = ss)
+        vout = rms::val.surv(newfit,newdata, S = survs, est.surv = ss)
         
         pdf(paste0(outfile, "_newData_validation.pdf"))
         plot(vout, xlab = "Predicted Probability" , 

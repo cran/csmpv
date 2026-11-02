@@ -18,7 +18,6 @@
 #' @param u A single numeric follow-up time for survival outcomes.
 #' @param outfile A string for the output file, including the path if necessary but without the file type extension. 
 
-#' @import rms
 #' @import survival
 #' @import Hmisc
 #' @importFrom utils write.csv
